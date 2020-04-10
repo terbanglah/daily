@@ -99,9 +99,98 @@ List dataKategori = List();
     _mySelection=items;
   } 
 
+  Future simpanInv() async{
+    // Showing CircularProgressIndicator.
+    setState(() {
+    });
+
+    FocusScope.of(context).requestFocus(FocusNode());
+    try {
+      var request = await CallApi().postDataFile('inventory');
+      request.headers.addAll(await CallApi().setHeader());
+      request.fields['category_id'] = _mySelection;
+      request.fields['inventory_name'] = txtName.text;
+      request.fields['price'] = txtPrice.text;
+      request.fields['stock'] = txtStok.text;
+      print(_mySelection);
+      if (_imageFile != null) {
+        var stream =
+            http.ByteStream(DelegatingStream.typed(_imageFile.openRead()));
+        var length = await _imageFile.length();
+        request.files.add(http.MultipartFile('image', stream, length,
+            filename: path.basename(_imageFile.path)));
+      }
+      // print(path.basename(_imageFile.path));
+      var response = await request.send();
+      // print(response.statusCode);
+      if (response.statusCode > 2) { //response status 201 (created)
+        var body = json.decode(await response.stream.bytesToString());
+        if (body['data'] != null) {
+          // SharedPreferences localStorage =
+          //     await SharedPreferences.getInstance();
+          // localStorage.setString('user', json.encode(body['data']));
+          print('File Uploaded');
+          getData();
+          // _showMsg('Berhasil Disimpan');
+        } else {
+          print(body);
+          // _showMsg('Gagal Disimpan !');
+        }
+      } else {
+        print('Gagal Disimpan !');
+        // _showMsg('');
+      }
+    } catch (e) {
+      debugPrint('Error : $e');
+      // _showMsg('Error');
+    }
+ 
+    // Getting value from Controller
+    // String name = txtName.text;
+    // String price = txtPrice.text;
+    // String stok = txtStok.text;
+    // // Store all data with Param Name.
+    // var data = {'category_id':_mySelection,'inventory_name': name, 'price'	: price,'stock':stok};
   
+    // // print(data);
+    // // Starting Web API Call.
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // String stringValue = prefs.getString('Token');
+    // var response = await http.post(BaseUrl.simpanItemList, headers: { 'Accept':'application/json','Content-Type':'application/json','Authorization': 'Bearer ${stringValue}'}, body: json.encode(data));
+ 
+    // // Getting Server response into variable.
+    // var message = jsonDecode(response.body);
+    // var errorMessage;
+    // print(message);
+    // if(message['data']['inventory_name'] == name){
+    //    getData();
+    //   //  Navigator.of(context).pop();
+    // }
+    // else {
+    //   errorMessage = 'Simpan gagal';
+    //   showDialog(
+    //   context: context,
+    //   builder: (BuildContext context) {
+    //     return AlertDialog(
+    //       title: new Text(errorMessage),
+    //       actions: <Widget>[
+    //         FlatButton(
+    //           child: new Text("OK"),
+    //           onPressed: () {
+    //             Navigator.of(context).pop();
+    //           },
+    //         ),
+    //       ],
+    //     );
+    //   }
+    //   );
+    // }
+  }
+
 
   Future updtaeInv(int id) async{
+    setState(() {
+    });
     FocusScope.of(context).requestFocus(FocusNode());
     try {
       var request = await CallApi().postDataFile('inventory/edit/${id}');
@@ -110,6 +199,7 @@ List dataKategori = List();
       request.fields['inventory_name'] = txtName.text;
       request.fields['price'] = txtPrice.text;
       request.fields['stock'] = txtStok.text;
+      print(_mySelection);
       if (_imageFile != null) {
         var stream =
             http.ByteStream(DelegatingStream.typed(_imageFile.openRead()));
@@ -117,16 +207,17 @@ List dataKategori = List();
         request.files.add(http.MultipartFile('image', stream, length,
             filename: path.basename(_imageFile.path)));
       }
-      print(path.basename(_imageFile.path));
+      // print(path.basename(_imageFile.path));
       var response = await request.send();
-      print(response.statusCode);
+      // print(response.statusCode);
       if (response.statusCode > 2) { //response status 201 (created)
         var body = json.decode(await response.stream.bytesToString());
         if (body['data'] != null) {
-          SharedPreferences localStorage =
-              await SharedPreferences.getInstance();
-          localStorage.setString('user', json.encode(body['data']));
+          // SharedPreferences localStorage =
+          //     await SharedPreferences.getInstance();
+          // localStorage.setString('user', json.encode(body['data']));
           print('File Uploaded');
+          getData();
           // _showMsg('Berhasil Disimpan');
         } else {
           print(body);
@@ -453,8 +544,25 @@ List dataKategori = List();
       ),
       controller: txtPrice,
     );
+    final stok = TextFormField(
+      autofocus: false,
+      decoration: InputDecoration(
+        // hintText: 'Email',
+        // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+        // border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        labelText: 'Stok',
+        labelStyle: TextStyle(
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.bold,
+          color: Colors.grey),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Warnadasar.defaultColor))
+      ),
+      controller: txtStok,
+    );
     txtName.text = "";
     txtPrice.text = "";
+    txtStok.text = "";
     //print(_mySelection);
     showDialog(
       context: context,
@@ -464,31 +572,69 @@ List dataKategori = List();
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               return Container(
-                height: 250.0,
+                height: 350.0,
                 width: 300.0,
-                child: Column(
+                child: ListView(
                   children: <Widget>[
-                    invName,
-                    SizedBox(height: 10.0,),
-                    harga,
-                    SizedBox(height: 20.0,),
-                    DropdownButton(
-                      // : txtPhoneCompany,
-                      isExpanded: true,
-                      items: dataKategori.map((item) {
-                      return new DropdownMenuItem(
-                        child: new Text(item['description']),
-                        value: item['id'].toString(),
-                      );
-                      }).toList(),
-                      onChanged: (newVal) {
-                        setState(() {
-                          _mySelection = newVal;
-                          print("searchSource:" + _mySelection);
-                        });
-                      },
-                      value: _mySelection,
+                    Container(
+                      height: 70.0,
+                      child: InkWell(
+                        onTap: _chooseGallery,
+                        child: FutureBuilder(
+                          future: checkImageProfile(),
+                          builder:
+                              (BuildContext context, AsyncSnapshot<String> snapshot) {
+                            if (snapshot.hasData) {
+                              if (_imageFile == null) {
+                                return CircleAvatar(
+                                  radius: 75.0,
+                                  backgroundImage: NetworkImage(snapshot.data),
+                                  backgroundColor: Colors.transparent,
+                                );
+                              } else {
+                                return CircleAvatar(
+                                  radius: 75.0,
+                                  backgroundImage: FileImage(_imageFile),
+                                  backgroundColor: Colors.transparent,
+                                );
+                              }
+                            } else {
+                              return Text('No Image');
+                            }
+                          },
+                        ),
+                      ),
                     ),
+                    Container(
+                      child: Column(
+                        children: <Widget>[
+                          invName,
+                          SizedBox(height: 10.0,),
+                          harga,
+                          SizedBox(height: 20.0,),
+                          stok,
+                          SizedBox(height: 20.0,),
+                          DropdownButton(
+                            // : txtPhoneCompany,
+                            isExpanded: true,
+                            items: dataKategori.map((item) {
+                            return new DropdownMenuItem(
+                              child: new Text(item['description']),
+                              value: item['id'].toString(),
+                            );
+                            }).toList(),
+                            onChanged: (newVal) {
+                              setState(() {
+                                _mySelection = newVal;
+                                print("searchSource:" + _mySelection);
+                              });
+                            },
+                            value: _mySelection,
+                          ),
+                        ]
+                      )
+                    ),
+                    
                   ],
                 ),
               );
@@ -497,9 +643,9 @@ List dataKategori = List();
           actions: <Widget>[
             RaisedButton(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
               ),
-              color: Colors.blue,
+              color: Warnadasar.menuCar,
               onPressed: () {
                 simpanInv();
                 Navigator.of(context).pop();
@@ -650,9 +796,9 @@ List dataKategori = List();
           actions: <Widget>[
             RaisedButton(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
               ),
-              color: Colors.blue,
+              color: Warnadasar.menuCar,
               onPressed: () {
                 Navigator.of(context).pop();
                 updtaeInv(id);
@@ -670,50 +816,5 @@ List dataKategori = List();
                               
   }
 
-  Future simpanInv() async{
-    // Showing CircularProgressIndicator.
-    setState(() {
-    });
- 
-    // Getting value from Controller
-    String name = txtName.text;
-    String price = txtPrice.text;
-    // Store all data with Param Name.
-    var data = {'category_id':_mySelection,'inventory_name': name, 'price'	: price};
   
-    // print(data);
-    // Starting Web API Call.
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String stringValue = prefs.getString('Token');
-    var response = await http.post(BaseUrl.simpanItemList, headers: { 'Accept':'application/json','Content-Type':'application/json','Authorization': 'Bearer ${stringValue}'}, body: json.encode(data));
- 
-    // Getting Server response into variable.
-    var message = jsonDecode(response.body);
-    var errorMessage;
-    // print(message);
-    if(message['data']['inventory_name'] == name){
-       getData();
-      //  Navigator.of(context).pop();
-    }
-    else {
-      errorMessage = 'Simpan gagal';
-      showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: new Text(errorMessage),
-          actions: <Widget>[
-            FlatButton(
-              child: new Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      }
-      );
-    }
-  }
-
 }
