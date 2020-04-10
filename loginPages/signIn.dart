@@ -21,7 +21,7 @@ class Login extends StatelessWidget {
       title: 'Kodeversitas',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.indigo,
+        primarySwatch: Colors.blueGrey,
         fontFamily: 'Nunito',
       ),
       
@@ -116,6 +116,7 @@ class _LoginPageState extends State<LoginPage> {
   else if(message['data']['email'] == email){
     var simpanToken = message['meta']['token'];
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('user', json.encode(message['data']));
     prefs.setString('Token', simpanToken);
     // Navigate to Profile Screen & Sending Email to Next Screen.
       Navigator.of(context).pushReplacement(
@@ -133,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
       child: CircleAvatar(
         backgroundColor: Colors.transparent,
         radius: 60.0,
-        child: Image.asset('assets/logo.png'),
+        child: Image.asset('assets/2.png'),
       ),
     );
 
@@ -182,8 +183,8 @@ class _LoginPageState extends State<LoginPage> {
       height: 55.0,
       child: Material(
         borderRadius: BorderRadius.circular(32.0),
-        shadowColor: Color(0xff5e72e4),
-        color: Color(0xff5e72e4),
+        shadowColor: Colors.blueGrey.shade400,
+        color: Colors.blueGrey.shade400,
         elevation: 7.0,
         child: RaisedButton(
           shape: RoundedRectangleBorder(
@@ -198,7 +199,7 @@ class _LoginPageState extends State<LoginPage> {
             // );
           },
           padding: EdgeInsets.all(12),
-          color: Color(0xff5e72e4),
+          color: Colors.blueGrey.shade400,
           child: Center(
             child: Text(
               'LOGIN',
@@ -226,7 +227,7 @@ class _LoginPageState extends State<LoginPage> {
         child: Text(
           'Forgot Password',
           style: TextStyle(
-          color: Color(0xff5e72e4),
+          color: Colors.blueGrey.shade600,
           fontWeight: FontWeight.bold,
           fontFamily: 'Montserrat',
           decoration: TextDecoration.underline),
@@ -271,7 +272,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text(
                           'Register',
                           style: TextStyle(
-                              color: Color(0xff5e72e4),
+                              color: Colors.blueGrey.shade700,
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
                               decoration: TextDecoration.underline),
