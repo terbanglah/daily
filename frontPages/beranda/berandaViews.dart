@@ -36,7 +36,7 @@ class _BerandaViewState extends State<BerandaView> {
         title: "ANALISA"));
     _gojekServiceList.add(new YesService(
         image: Icons.list, 
-        color: Warnadasar.menuOther, 
+        color: Warnadasar.menuCar, 
         title: "ITEMS"));
     _gojekServiceList.add(new YesService(
         image: Icons.apps, 
@@ -117,7 +117,7 @@ class _BerandaViewState extends State<BerandaView> {
               }
               else if(gojekService.title== 'ITEMS'){
                 Navigator.push(context, 
-                  MaterialPageRoute(builder: (context) => Itemslist())
+                  MaterialPageRoute(builder: (context) => ShowItemList())
                 );
                 // Navigator.push(
                 //   context,
