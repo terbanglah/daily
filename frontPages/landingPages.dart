@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../default/constan.dart';
 import 'beranda/berandaViews.dart';
+import 'moreInfo.dart';
 
 class Landings extends StatelessWidget {
   @override
@@ -49,16 +50,24 @@ class _showlandingState extends State<showlanding> {
               // borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20),bottomRight: Radius.circular(20))
             ),
             child: Container(
-              padding: EdgeInsets.only(top: 20.0),
+              padding: EdgeInsets.only(left: 20.0,top: 20.0, right: 20.0),
               margin: EdgeInsets.fromLTRB(0,20, 0, 0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Icon(Icons.navigate_before,size: 28,color: Colors.transparent,),
-                  // Image.asset('logo1.png'),
-                  Text("Doffly",style: TextStyle(fontSize: 20,color: Colors.white,fontWeight: FontWeight.bold),),
-                  Icon(Icons.navigate_before,color: Colors.transparent,),
+                  Image.asset('1.png',width: 70.0,),
+                  // Text("Doffly",style: TextStyle(fontSize: 20,color: Colors.white,fontWeight: FontWeight.bold),),
+                  new GestureDetector(
+                    onTap:() {
+                      Navigator.push(
+                        context,
+                          MaterialPageRoute(builder: (context) => AkunUser())
+                      );
+                    },
+                    child :new Icon(Icons.more_vert ,color: Colors.white,),
+                  )
                 ],
               ),
             ),
