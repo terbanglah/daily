@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:learn_project/cashier/inventorycart.dart';
+import '../cashier/inventorycart.dart';
 import '../default/constan.dart';
 import '../model/constants.dart';
 import '../default/api.dart';
