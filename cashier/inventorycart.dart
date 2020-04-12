@@ -34,7 +34,6 @@ class _InventoryCartState extends State<InventoryCart> {
         },
       ),
     );
-    Navigator.pop(context);
     _scaffoldkey.currentState.showSnackBar(snackBar);
   }
 
@@ -117,13 +116,18 @@ class _InventoryCartState extends State<InventoryCart> {
       setState(() {
         widget.readCart();
       });
+      Navigator.pop(context);
       _showMsg(context, '${z.inventoryName} ditambahkan dikasir');
     } else {
+      Navigator.pop(context);
       _showMsg(context, '${z.inventoryName} gagal ditambahkan dikasir !');
     }
   }
 
-  dialogDetail(InventoryModel z) {
+  dialogDetail(BuildContext context, InventoryModel z) {
+    if (z.stock <= 0) {
+      return _showMsg(context, '${z.inventoryName} stok telah habis !');
+    }
     qtyController.text = '1';
     showDialog(
       context: context,
@@ -135,11 +139,11 @@ class _InventoryCartState extends State<InventoryCart> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                   Image.network(
-                      z.image,
-                      height: 160,
-                      fit: BoxFit.fill,
-                   ),
+                  Image.network(
+                    z.image,
+                    height: 180,
+                    fit: BoxFit.fill,
+                  ),
                   ListTile(
                     title: Text(
                       z.inventoryName,
@@ -281,7 +285,7 @@ class _InventoryCartState extends State<InventoryCart> {
                                 final z = listInventory[i];
                                 return InkWell(
                                   onTap: () {
-                                    dialogDetail(z);
+                                    dialogDetail(context, z);
                                   },
                                   child: Card(
                                     child: Column(
@@ -289,11 +293,38 @@ class _InventoryCartState extends State<InventoryCart> {
                                           CrossAxisAlignment.stretch,
                                       children: <Widget>[
                                         Expanded(
-                                          child: ClipRRect(
-                                            child: Image.network(
-                                              z.image,
-                                              fit: BoxFit.fill,
-                                            ),
+                                          child: Stack(
+                                            children: <Widget>[
+                                              ColorFiltered(
+                                                colorFilter: z.stock > 0
+                                                    ? ColorFilter.mode(
+                                                        Colors.transparent,
+                                                        BlendMode.multiply,
+                                                      )
+                                                    : ColorFilter.mode(
+                                                        Colors.grey,
+                                                        BlendMode.saturation,
+                                                      ),
+                                                child: Image.network(
+                                                  z.image,
+                                                  width: 500.0,
+                                                  height: 500.0,
+                                                  fit: BoxFit.fill,
+                                                ),
+                                              ),
+                                              Center(
+                                                child: Opacity(
+                                                  opacity:
+                                                      z.stock > 0 ? 0.0 : 0.75,
+                                                  child: Container(
+                                                    color: Colors.white,
+                                                    padding:
+                                                        EdgeInsets.all(10.0),
+                                                    child: Text('Stok Habis'),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                         Padding(
