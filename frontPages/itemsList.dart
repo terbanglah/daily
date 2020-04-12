@@ -144,47 +144,7 @@ List dataKategori = List();
       debugPrint('Error : $e');
       // _showMsg('Error');
     }
- 
-    // Getting value from Controller
-    // String name = txtName.text;
-    // String price = txtPrice.text;
-    // String stok = txtStok.text;
-    // // Store all data with Param Name.
-    // var data = {'category_id':_mySelection,'inventory_name': name, 'price'	: price,'stock':stok};
-  
-    // // print(data);
-    // // Starting Web API Call.
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    // String stringValue = prefs.getString('Token');
-    // var response = await http.post(BaseUrl.simpanItemList, headers: { 'Accept':'application/json','Content-Type':'application/json','Authorization': 'Bearer ${stringValue}'}, body: json.encode(data));
- 
-    // // Getting Server response into variable.
-    // var message = jsonDecode(response.body);
-    // var errorMessage;
-    // print(message);
-    // if(message['data']['inventory_name'] == name){
-    //    getData();
-    //   //  Navigator.of(context).pop();
-    // }
-    // else {
-    //   errorMessage = 'Simpan gagal';
-    //   showDialog(
-    //   context: context,
-    //   builder: (BuildContext context) {
-    //     return AlertDialog(
-    //       title: new Text(errorMessage),
-    //       actions: <Widget>[
-    //         FlatButton(
-    //           child: new Text("OK"),
-    //           onPressed: () {
-    //             Navigator.of(context).pop();
-    //           },
-    //         ),
-    //       ],
-    //     );
-    //   }
-    //   );
-    // }
+
   }
 
 
@@ -231,46 +191,6 @@ List dataKategori = List();
       debugPrint('Error : $e');
       // _showMsg('Error');
     }
-    // // Showing CircularProgressIndicator.
-    // setState(() {
-    // });
-    // String name = txtName.text;
-    // String price = txtPrice.text;
-    // // Store all data with Param Name.
-    // var data = {'category_id':_mySelection,'inventory_name': name, 'price'	: price};
-  
-    // // print(data);
-    // // Starting Web API Call.
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    // String stringValue = prefs.getString('Token');
-    // var response = await http.post(BaseUrl.updateItemList+'${id}', headers: { 'Accept':'application/json','Content-Type':'application/json','Authorization': 'Bearer ${stringValue}'}, body: json.encode(data));
- 
-    // // Getting Server response into variable.
-    // var message = jsonDecode(response.body);
-    // var errorMessage;
-    // print(message);
-    // if(message['data']['inventory_name'] == name){
-    //    Navigator.of(context).pop();
-    // }
-    // else {
-    //   errorMessage = 'Simpan gagal';
-    //   showDialog(
-    //   context: context,
-    //   builder: (BuildContext context) {
-    //     return AlertDialog(
-    //       title: new Text(errorMessage),
-    //       actions: <Widget>[
-    //         FlatButton(
-    //           child: new Text("OK"),
-    //           onPressed: () {
-    //             Navigator.of(context).pop();
-    //           },
-    //         ),
-    //       ],
-    //     );
-    //   }
-    //   );
-    // }
   }
 
   _chooseGallery() async {
@@ -368,15 +288,6 @@ List dataKategori = List();
           ),
         ),
       ),
-      // appBar: AppBar(
-      //   backgroundColor: Warnadasar.menuOther,
-      //   title: Text(
-      //     'Kasir',
-      //     style: TextStyle(color: Colors.white),
-      //   ),
-      //   iconTheme: IconThemeData(color: Colors.white),
-        
-      // ),
       backgroundColor: Colors.blueGrey.shade100,
       
       body: Container(
@@ -517,14 +428,15 @@ List dataKategori = List();
       decoration: InputDecoration(
         // hintText: 'Email',
         // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        // border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
         labelText: 'nama',
         labelStyle: TextStyle(
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Warnadasar.defaultColor))
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          borderSide: BorderSide(color: Warnadasar.menuCar),)
       ),
       controller: txtName,
     );
@@ -533,14 +445,15 @@ List dataKategori = List();
       decoration: InputDecoration(
         // hintText: 'Email',
         // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        // border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
         labelText: 'Harga',
         labelStyle: TextStyle(
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Warnadasar.defaultColor))
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          borderSide: BorderSide(color: Warnadasar.menuCar),)
       ),
       controller: txtPrice,
     );
@@ -549,14 +462,16 @@ List dataKategori = List();
       decoration: InputDecoration(
         // hintText: 'Email',
         // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        // border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
         labelText: 'Stok',
         labelStyle: TextStyle(
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Warnadasar.defaultColor))
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          borderSide: BorderSide(color: Warnadasar.menuCar),
+        )
       ),
       controller: txtStok,
     );
@@ -614,24 +529,32 @@ List dataKategori = List();
                           SizedBox(height: 20.0,),
                           stok,
                           SizedBox(height: 20.0,),
-                          DropdownButton(
-                            // : txtPhoneCompany,
-                            isExpanded: true,
-                            items: dataKategori.map((item) {
-                            return new DropdownMenuItem(
-                              child: new Text(item['description']),
-                              value: item['id'].toString(),
-                            );
-                            }).toList(),
-                            onChanged: (newVal) {
-                              setState(() {
-                                _mySelection = newVal;
-                                print("searchSource:" + _mySelection);
-                              });
-                            },
-                            value: _mySelection,
-                          ),
-                        ]
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 10.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(23.0),
+                              border: Border.all(
+                              color: Warnadasar.menuCar, style: BorderStyle.solid, width: 0.80),
+                            ),
+                            child: DropdownButton(
+                                // : txtPhoneCompany,
+                                isExpanded: true,
+                                items: dataKategori.map((item) {
+                                return new DropdownMenuItem(
+                                  child: new Text(item['description']),
+                                  value: item['id'].toString(),
+                                );
+                                }).toList(),
+                                onChanged: (newVal) {
+                                  setState(() {
+                                    _mySelection = newVal;
+                                    print("searchSource:" + _mySelection);
+                                  });
+                                },
+                                value: _mySelection,
+                              ),
+                            )
+                          ]
                       )
                     ),
                     
@@ -674,8 +597,9 @@ List dataKategori = List();
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Warnadasar.defaultColor))
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          borderSide: BorderSide(color: Warnadasar.menuCar),)
       ),
       controller: txtName,
     );
@@ -690,8 +614,9 @@ List dataKategori = List();
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Warnadasar.defaultColor))
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          borderSide: BorderSide(color: Warnadasar.menuCar),)
       ),
       controller: txtPrice,
     );
@@ -706,8 +631,9 @@ List dataKategori = List();
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Warnadasar.defaultColor))
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          borderSide: BorderSide(color: Warnadasar.menuCar),)
       ),
       controller: txtStok,
     );
@@ -767,23 +693,31 @@ List dataKategori = List();
                           SizedBox(height: 20.0,),
                           stok,
                           SizedBox(height: 20.0,),
-                          DropdownButton(
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 10.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(23.0),
+                              border: Border.all(
+                              color: Warnadasar.menuCar, style: BorderStyle.solid, width: 0.80),
+                            ),
+                            child: DropdownButton(
                             // : txtPhoneCompany,
-                            isExpanded: true,
-                            items: dataKategori.map((item) {
-                            return new DropdownMenuItem(
-                              child: new Text(item['description']),
-                              value: item['id'].toString(),
-                            );
-                            }).toList(),
-                            onChanged: (newVal) {
-                              setState(() {
-                                _mySelection = newVal;
-                                print("searchSource:" + _mySelection);
-                              });
-                            },
-                            value: _mySelection,
-                          ),
+                              isExpanded: true,
+                              items: dataKategori.map((item) {
+                              return new DropdownMenuItem(
+                                child: new Text(item['description']),
+                                value: item['id'].toString(),
+                              );
+                              }).toList(),
+                              onChanged: (newVal) {
+                                setState(() {
+                                  _mySelection = newVal;
+                                  print("searchSource:" + _mySelection);
+                                });
+                              },
+                              value: _mySelection,
+                            ),
+                          )
                         ]
                       )
                     ),
