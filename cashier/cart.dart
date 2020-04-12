@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:learn_project/cashier/inventorycart.dart';
 import '../default/constan.dart';
 import '../model/constants.dart';
 import '../default/api.dart';
@@ -19,6 +20,8 @@ class _CartPageState extends State<CartPage> {
   double amount = 0;
   final list = List<CartModel>();
 
+  TextEditingController qtyController = TextEditingController();
+
   Future<void> _readData() async {
     list.clear();
     amount = 0;
@@ -34,11 +37,11 @@ class _CartPageState extends State<CartPage> {
           api['id'],
           api['inventory']['id'],
           api['inventory']['inventory_name'],
-          double.parse(api['inventory']['price']),
+          api['inventory']['price'] + .0,
           api['qty'],
           api['inventory']['image'],
         );
-        amount += double.parse(api['inventory']['price']) * api['qty'];
+        amount += api['inventory']['price'] + .0 * api['qty'];
         list.add(ab);
       });
       if (!mounted) return;
@@ -46,17 +49,6 @@ class _CartPageState extends State<CartPage> {
         loading = false;
       });
     }
-  }
-
-  dialogImage(String image) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          child: Image.network(image),
-        );
-      },
-    );
   }
 
   dialogDelete(String id) {
@@ -68,30 +60,52 @@ class _CartPageState extends State<CartPage> {
             padding: EdgeInsets.all(16.0),
             shrinkWrap: true,
             children: <Widget>[
-              Text('Anda yakin ingin menghapus produk ini ?'),
+              Text(id != 'all'
+                  ? 'Anda yakin ingin menghapus produk ini ?'
+                  : 'Anda yakin menghapus semua produk ?'),
               SizedBox(
                 height: 20.0,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
-                  InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text(
-                      'No',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                  Container(
+                    width: 80.0,
+                    height: 40.0,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        splashColor: Colors.grey.shade400,
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: Center(
+                          child: Text(
+                            'No',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  InkWell(
-                    onTap: () {
-                      _deleteData(id);
-                      Navigator.pop(context);
-                    },
-                    child: Text(
-                      'Yes',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                  Container(
+                    width: 80.0,
+                    height: 40.0,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        splashColor: Colors.grey.shade400,
+                        onTap: () {
+                          _deleteData(id);
+                          Navigator.pop(context);
+                        },
+                        child: Center(
+                          child: Text(
+                            'Yes',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
                     ),
                   )
                 ],
@@ -101,6 +115,98 @@ class _CartPageState extends State<CartPage> {
         );
       },
     );
+  }
+
+  dialogUpdate(CartModel x) {
+    qtyController.text = x.qty.toString();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: ListView(
+            shrinkWrap: true,
+            children: <Widget>[
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  ClipRRect(
+                    child: Image.network(
+                      x.image,
+                      height: 200,
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                  ListTile(
+                    title: Text(
+                      x.inventoryName,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      'Rp. ' + oCcy.format(x.price).toString(),
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: EdgeInsets.fromLTRB(20.0, 0, 15.0, 20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Container(
+                      width: 140.0,
+                      child: TextField(
+                        controller: qtyController,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.all(0.0),
+                          prefixText: 'Kuantitas :  ',
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                    Container(
+                      width: 100,
+                      child: RaisedButton(
+                        onPressed: () {
+                          _updateData(x);
+                          Navigator.pop(context);
+                        },
+                        disabledColor: Colors.grey,
+                        color: Warnadasar.menuFood,
+                        child: Text(
+                          'Ubah',
+                          style: TextStyle(
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  _updateData(CartModel x) async {
+    var data = {
+      'qty': qtyController.text,
+    };
+    var response = await CallApi().putData(data, 'cart/${x.id}');
+    //print(response.body);
+    final body = jsonDecode(response.body);
+    if (body['data'] != null) {
+      setState(() {
+        _readData();
+      });
+    } else {
+      print(data);
+    }
   }
 
   _deleteData(String id) async {
@@ -113,6 +219,8 @@ class _CartPageState extends State<CartPage> {
         // Navigator.pop(context);
         _readData();
       });
+    } else {
+      print(data);
     }
   }
 
@@ -152,82 +260,67 @@ class _CartPageState extends State<CartPage> {
           )
         ],
       ),
-      // appBar: PreferredSize(
-      //   preferredSize: Size(double.infinity, 100),
-      //   child: Container(
-      //     decoration: BoxDecoration(
-      //       boxShadow: [BoxShadow(
-      //         color: Colors.black12,
-      //         spreadRadius: 5,
-      //         blurRadius: 2
-      //       )]
-      //     ),
-      //     width: MediaQuery.of(context).size.width,
-      //     height: 90,
-      //     child: Container(
-      //       decoration: BoxDecoration(
-      //         color: Warnadasar.menuFood,
-      //         // borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20),bottomRight: Radius.circular(20))
-      //       ),
-      //       child: Container(
-      //         padding: EdgeInsets.only(top: 20.0,left: 10.0),
-      //         margin: EdgeInsets.fromLTRB(0,20, 0, 0),
-      //         child: Row(
-      //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //           crossAxisAlignment: CrossAxisAlignment.center,
-      //           children: [
-      //             Icon(Icons.arrow_back,size: 28,color: Colors.white,),
-      //             // Image.asset('logo1.png'),
-      //             Text("Kasir",style: TextStyle(fontSize: 20,color: Warnadasar.white, fontWeight: FontWeight.bold),),
-      //             Icon(Icons.navigate_before,color: Colors.transparent,),
-      //           ],
-      //         ),
-      //       ),
-      //     ),
-      //   ),
-      // ),
       body: RefreshIndicator(
         key: _refresh,
         onRefresh: _readData,
         child: loading
             ? Center(child: CircularProgressIndicator())
-            : ListView.builder(
-                itemCount: list.length,
-                itemBuilder: (context, i) {
-                  final x = list[i];
-                  return ListTile(
-                    leading: GestureDetector(
-                      onTap: () {
-                        dialogImage(x.image);
-                      },
-                      child: CircleAvatar(
-                        radius: 25,
-                        backgroundImage: NetworkImage(x.image),
-                      ),
+            : list.length == 0
+                ? Center(
+                    child: Text(
+                      'Item kasir tidak ada',
+                      style: TextStyle(color: Colors.grey),
                     ),
-                    title: Text(x.inventoryName),
-                    subtitle: Row(
-                      children: <Widget>[
-                        Text(
-                          'Rp. ' + oCcy.format(x.price).toString(),
-                          style: TextStyle(color: Colors.red),
+                  )
+                : ListView.builder(
+                    itemCount: list.length,
+                    itemBuilder: (context, i) {
+                      final x = list[i];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          radius: 25,
+                          backgroundImage: NetworkImage(x.image),
                         ),
-                        SizedBox(width: 10.0),
-                        Text('x'),
-                        SizedBox(width: 10.0),
-                        Text(
-                          x.qty.toString(),
+                        title: Text(x.inventoryName),
+                        subtitle: Row(
+                          children: <Widget>[
+                            Text(
+                              'Rp. ' + oCcy.format(x.price).toString(),
+                              style: TextStyle(color: Colors.red),
+                            ),
+                            SizedBox(width: 10.0),
+                            Text('x'),
+                            SizedBox(width: 10.0),
+                            Text(
+                              x.qty.toString(),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    trailing: InkWell(
+                        trailing: Container(
+                          width: 40.0,
+                          height: 40.0,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: Material(
+                            borderRadius: BorderRadius.circular(50),
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(50),
+                              onTap: () {
+                                dialogDelete(x.id.toString());
+                              },
+                              child: Icon(Icons.close),
+                            ),
+                          ),
+                        ),
                         onTap: () {
-                          dialogDelete(x.id.toString());
+                          dialogUpdate(x);
                         },
-                        child: Icon(Icons.close)),
-                  );
-                },
-              ),
+                      );
+                    },
+                  ),
       ),
       bottomNavigationBar: Container(
         color: Colors.white,
@@ -240,23 +333,29 @@ class _CartPageState extends State<CartPage> {
               ),
             ),
             Expanded(
-                child: MaterialButton(
-              height: 75.0,
-              color: Warnadasar.menuFood,
-              onPressed: () {},
-              child: Text(
-                'Bayar',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold),
+              child: MaterialButton(
+                height: 75.0,
+                color: Warnadasar.menuFood,
+                onPressed: () {},
+                child: Text(
+                  'Bayar',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
-            ))
+            )
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => InventoryCart(_readData)));
+        },
         backgroundColor: Warnadasar.menuFood,
         tooltip: 'Add',
         child: Icon(
