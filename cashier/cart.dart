@@ -41,7 +41,7 @@ class _CartPageState extends State<CartPage> {
           api['qty'],
           api['inventory']['image'],
         );
-        amount += api['inventory']['price'] + .0 * api['qty'];
+        amount += ((api['inventory']['price'] + .0) * api['qty']);
         list.add(ab);
       });
       if (!mounted) return;
