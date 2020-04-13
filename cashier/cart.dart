@@ -241,9 +241,11 @@ class _CartPageState extends State<CartPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Warnadasar.menuFood,
-        title: Text(
-          'Kasir',
-          style: TextStyle(color: Colors.white),
+        title: Center(
+          child: Text(
+            'Kasir',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
         iconTheme: IconThemeData(color: Colors.white),
         actions: <Widget>[
