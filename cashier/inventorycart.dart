@@ -7,8 +7,8 @@ import '../model/modelCategory.dart';
 import '../default/constan.dart';
 
 class InventoryCart extends StatefulWidget {
-  final VoidCallback readCart;
-  InventoryCart(this.readCart);
+  final VoidCallback reloadCart;
+  InventoryCart(this.reloadCart);
   @override
   _InventoryCartState createState() => _InventoryCartState();
 }
@@ -21,6 +21,7 @@ class _InventoryCartState extends State<InventoryCart> {
   var loadingCategory = false;
   var laodingInventory = false;
   int typeCategory = 0;
+  int amountCart = 0;
 
   TextEditingController qtyController = TextEditingController();
 
@@ -45,7 +46,7 @@ class _InventoryCartState extends State<InventoryCart> {
     });
     var response = await CallApi().getData('category');
     final data = jsonDecode(response.body);
-    print(data);
+    print('Category : $data');
     if (data['data'] != null) {
       data['data'].forEach((api) {
         final ab = CategoryModel(
@@ -67,7 +68,7 @@ class _InventoryCartState extends State<InventoryCart> {
     });
     var response = await CallApi().getData('inventory?is_active=true');
     final data = jsonDecode(response.body);
-    print(data);
+    print('Inventory : $data');
     if (data['data'] != null) {
       if (typeCategory != 0) {
         data['data'].forEach((api) {
@@ -104,6 +105,21 @@ class _InventoryCartState extends State<InventoryCart> {
     }
   }
 
+  Future<void> _readCart() async {
+    var response = await CallApi().getData('cart');
+    final data = jsonDecode(response.body);
+    print('Cart : $data');
+    int amount = 0;
+    if (data['data'] != null) {
+      data['data'].forEach((api) {
+        amount += 1;
+      });
+    }
+    setState(() {
+      amountCart = amount;
+    });
+  }
+
   _addCart(BuildContext context, InventoryModel z) async {
     var data = {
       'inventory_id': z.id,
@@ -114,7 +130,8 @@ class _InventoryCartState extends State<InventoryCart> {
     print(body);
     if (body['data'] != null) {
       setState(() {
-        widget.readCart();
+        widget.reloadCart();
+        _readCart();
       });
       Navigator.pop(context);
       _showMsg(context, '${z.inventoryName} ditambahkan dikasir');
@@ -205,6 +222,7 @@ class _InventoryCartState extends State<InventoryCart> {
     super.initState();
     _readCategory();
     _readInventory();
+    _readCart();
   }
 
   @override
@@ -212,9 +230,47 @@ class _InventoryCartState extends State<InventoryCart> {
     return Scaffold(
       key: _scaffoldkey,
       appBar: AppBar(
-        title: Text(
-          'Inventory',
-          style: TextStyle(color: Colors.white),
+        actions: <Widget>[
+          Stack(
+            children: <Widget>[
+              IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(Icons.print),
+              ),
+              Positioned(
+                right: 1.0,
+                top: 1.0,
+                child: Stack(
+                  children: <Widget>[
+                    Icon(
+                      Icons.brightness_1,
+                      size: 25,
+                      color: Colors.green.shade500,
+                    ),
+                    Positioned(
+                      top: 6.0,
+                      right: 8.0,
+                      child: Text(
+                        amountCart.toString(),
+                        style: TextStyle(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
+          )
+        ],
+        title: Center(
+          child: Text(
+            'Item',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
         backgroundColor: Warnadasar.menuFood,
         iconTheme: IconThemeData(color: Colors.white),
