@@ -239,30 +239,32 @@ class _InventoryCartState extends State<InventoryCart> {
                 },
                 icon: Icon(Icons.print),
               ),
-              Positioned(
-                right: 1.0,
-                top: 1.0,
-                child: Stack(
-                  children: <Widget>[
-                    Icon(
-                      Icons.brightness_1,
-                      size: 25,
-                      color: Colors.green.shade500,
-                    ),
-                    Positioned(
-                      top: 6.0,
-                      right: 8.0,
-                      child: Text(
-                        amountCart.toString(),
-                        style: TextStyle(
-                          fontSize: 11.0,
-                          fontWeight: FontWeight.bold,
-                        ),
+              amountCart == 0
+                  ? Container()
+                  : Positioned(
+                      right: 1.0,
+                      top: 1.0,
+                      child: Stack(
+                        children: <Widget>[
+                          Icon(
+                            Icons.brightness_1,
+                            size: 25,
+                            color: Colors.green.shade500,
+                          ),
+                          Positioned(
+                            top: 6.0,
+                            right: 8.0,
+                            child: Text(
+                              amountCart.toString(),
+                              style: TextStyle(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                        ],
                       ),
                     )
-                  ],
-                ),
-              )
             ],
           )
         ],
