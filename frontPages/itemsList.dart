@@ -1,36 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:async/async.dart';
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
 
 import '../default/constan.dart';
 import '../default/baseurl.dart';
-import 'beranda/berandaViews.dart';
+import '../default/api.dart';
 
-class Itemslist extends StatelessWidget {
+
+
+// class Itemslist extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Flutter Demo',
+//       theme: ThemeData(
+//         primarySwatch: Colors.amber,
+//       ),
+//       debugShowCheckedModeBanner: false,
+//       home: ShowItemList(),
+//     );
+//   }
+// }
+class ShowItemList extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.amber,
-      ),
-      debugShowCheckedModeBanner: false,
-      home: showItemList(),
-    );
-  }
-}
-class showItemList extends StatefulWidget {
-  @override
-  _showItemListState createState() => _showItemListState();
+  _ShowItemListState createState() => _ShowItemListState();
 }
 
-class _showItemListState extends State<showItemList> {
+class _ShowItemListState extends State<ShowItemList> {
   String _mySelection;
   String items;
   final txtName = TextEditingController();
   final txtPrice = TextEditingController();
+  final txtStok = TextEditingController();
+  File _imageFile;
+
+  Future<File> file;
+  String status = '';
+  String base64Image;
+
   List data; //DEFINE VARIABLE data DENGAN TYPE List AGAR DAPAT MENAMPUNG COLLECTION / ARRAY
 
   Future<String> getData() async {
@@ -49,6 +62,18 @@ class _showItemListState extends State<showItemList> {
     });
     return 'success!';
   }
+  // _showMsg(msg) {
+  //   final snackBar = SnackBar(
+  //     content: Text(msg),
+  //     action: SnackBarAction(
+  //       label: 'Close',
+  //       onPressed: () {
+  //         // Some code to undo the change!
+  //       },
+  //     ),
+  //   );
+  //   Scaffold.of(context).showSnackBar(snackBar);
+  // }
 
 List dataKategori = List();
   Future<String> getCategoryData() async {
@@ -74,49 +99,156 @@ List dataKategori = List();
     _mySelection=items;
   } 
 
-  
-
-  Future updtaeInv(int id) async{
+  Future simpanInv() async{
     // Showing CircularProgressIndicator.
     setState(() {
     });
-    String name = txtName.text;
-    String price = txtPrice.text;
-    // Store all data with Param Name.
-    var data = {'category_id':_mySelection,'inventory_name': name, 'price'	: price};
-  
-    // print(data);
-    // Starting Web API Call.
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String stringValue = prefs.getString('Token');
-    var response = await http.post(BaseUrl.updateItemList+'${id}', headers: { 'Accept':'application/json','Content-Type':'application/json','Authorization': 'Bearer ${stringValue}'}, body: json.encode(data));
- 
-    // Getting Server response into variable.
-    var message = jsonDecode(response.body);
-    var errorMessage;
-    print(message);
-    if(message['data']['inventory_name'] == name){
-       Navigator.of(context).pop();
-    }
-    else {
-      errorMessage = 'Simpan gagal';
-      showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: new Text(errorMessage),
-          actions: <Widget>[
-            FlatButton(
-              child: new Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
+
+    FocusScope.of(context).requestFocus(FocusNode());
+    try {
+      var request = await CallApi().postDataFile('inventory');
+      request.headers.addAll(await CallApi().setHeader());
+      request.fields['category_id'] = _mySelection;
+      request.fields['inventory_name'] = txtName.text;
+      request.fields['price'] = txtPrice.text;
+      request.fields['stock'] = txtStok.text;
+      print(_mySelection);
+      if (_imageFile != null) {
+        var stream =
+            http.ByteStream(DelegatingStream.typed(_imageFile.openRead()));
+        var length = await _imageFile.length();
+        request.files.add(http.MultipartFile('image', stream, length,
+            filename: path.basename(_imageFile.path)));
       }
-      );
+      // print(path.basename(_imageFile.path));
+      var response = await request.send();
+      // print(response.statusCode);
+      if (response.statusCode > 2) { //response status 201 (created)
+        var body = json.decode(await response.stream.bytesToString());
+        if (body['data'] != null) {
+          // SharedPreferences localStorage =
+          //     await SharedPreferences.getInstance();
+          // localStorage.setString('user', json.encode(body['data']));
+          print('File Uploaded');
+          getData();
+          // _showMsg('Berhasil Disimpan');
+        } else {
+          print(body);
+          // _showMsg('Gagal Disimpan !');
+        }
+      } else {
+        print('Gagal Disimpan !');
+        // _showMsg('');
+      }
+    } catch (e) {
+      debugPrint('Error : $e');
+      // _showMsg('Error');
     }
+
+  }
+
+
+  Future updtaeInv(int id) async{
+    setState(() {
+    });
+    FocusScope.of(context).requestFocus(FocusNode());
+    try {
+      var request = await CallApi().postDataFile('inventory/edit/${id}');
+      request.headers.addAll(await CallApi().setHeader());
+      request.fields['category_id'] = _mySelection;
+      request.fields['inventory_name'] = txtName.text;
+      request.fields['price'] = txtPrice.text;
+      request.fields['stock'] = txtStok.text;
+      print(_mySelection);
+      if (_imageFile != null) {
+        var stream =
+            http.ByteStream(DelegatingStream.typed(_imageFile.openRead()));
+        var length = await _imageFile.length();
+        request.files.add(http.MultipartFile('image', stream, length,
+            filename: path.basename(_imageFile.path)));
+      }
+      // print(path.basename(_imageFile.path));
+      var response = await request.send();
+      // print(response.statusCode);
+      if (response.statusCode > 2) { //response status 201 (created)
+        var body = json.decode(await response.stream.bytesToString());
+        if (body['data'] != null) {
+          // SharedPreferences localStorage =
+          //     await SharedPreferences.getInstance();
+          // localStorage.setString('user', json.encode(body['data']));
+          print('File Uploaded');
+          getData();
+          // _showMsg('Berhasil Disimpan');
+        } else {
+          print(body);
+          // _showMsg('Gagal Disimpan !');
+        }
+      } else {
+        print('Gagal Disimpan !');
+        // _showMsg('');
+      }
+    } catch (e) {
+      debugPrint('Error : $e');
+      // _showMsg('Error');
+    }
+  }
+
+  _chooseGallery() async {
+    var image = await ImagePicker.pickImage(
+      source: ImageSource.gallery,
+      maxHeight: 1920.0,
+      maxWidth: 1080.0,
+    );
+    setState(() {
+      _imageFile = image;
+    });
+  }
+
+  Widget showImage() {
+    return FutureBuilder<File>(
+      future: file,
+      builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done &&
+            null != snapshot.data) {
+          _imageFile = snapshot.data;
+          base64Image = base64Encode(snapshot.data.readAsBytesSync());
+          return Flexible(
+            child: Image.file(
+              snapshot.data,
+              fit: BoxFit.fill,
+            ),
+          );
+        } else if (null != snapshot.error) {
+          return const Text(
+            'Error Picking Image',
+            textAlign: TextAlign.center,
+          );
+        } else {
+          return const Text(
+            'No Image Selected',
+            textAlign: TextAlign.center,
+          );
+        }
+      },
+    );
+  }
+
+  _chooseCamera() async {
+    var image = await ImagePicker.pickImage(
+      source: ImageSource.camera,
+      maxHeight: 1920.0,
+      maxWidth: 1080.0,
+    );
+    setState(() {
+      _imageFile = image;
+    });
+  }
+
+  Future<String> checkImageProfile() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    var user = json.decode(localStorage.getString('user'));
+
+    return user['avatar'];
   }
 
   @override
@@ -136,7 +268,7 @@ List dataKategori = List();
           height: 90,
           child: Container(
             decoration: BoxDecoration(
-              color: Warnadasar.menuOther,
+              color: Warnadasar.menuCar,
               // borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20),bottomRight: Radius.circular(20))
             ),
             child: Container(
@@ -147,8 +279,8 @@ List dataKategori = List();
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Icon(Icons.navigate_before,size: 28,color: Colors.transparent,),
-                  // Image.asset('logo1.png'),
-                  Text("Items",style: TextStyle(fontSize: 20,color: Warnadasar.white, fontWeight: FontWeight.bold),),
+                  Image.asset('1.png', width: 70.0),
+                  // Text("Items",style: TextStyle(fontSize: 20,color: Warnadasar.white, fontWeight: FontWeight.bold),),
                   Icon(Icons.navigate_before,color: Colors.transparent,),
                 ],
               ),
@@ -157,6 +289,7 @@ List dataKategori = List();
         ),
       ),
       backgroundColor: Colors.blueGrey.shade100,
+      
       body: Container(
           
           margin: EdgeInsets.only(top: 10.0, right: 10.0, left: 10.0, bottom: 10.0), //SET MARGIN DARI CONTAINER
@@ -170,7 +303,7 @@ List dataKategori = List();
                   // color: Color(0xffc8e6c9),
                   // color: Color(Colors.green),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min, children: <Widget>[
@@ -211,6 +344,14 @@ List dataKategori = List();
                             Text('Rp. '),
                             //DARI INDEX ayat
                             Text(data[index]['price'].toString())
+                          ],
+                        ),
+                        Row(
+                          children: <Widget>[
+                            // Text('Rp. ', style: TextStyle(fontWeight: FontWeight.bold),),
+                            Text('Stok '),
+                            //DARI INDEX ayat
+                            Text(data[index]['stock'].toString())
                           ],
                         ),
                       ],),
@@ -287,14 +428,15 @@ List dataKategori = List();
       decoration: InputDecoration(
         // hintText: 'Email',
         // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        // border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
         labelText: 'nama',
         labelStyle: TextStyle(
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Warnadasar.defaultColor))
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          borderSide: BorderSide(color: Warnadasar.menuCar),)
       ),
       controller: txtName,
     );
@@ -303,19 +445,39 @@ List dataKategori = List();
       decoration: InputDecoration(
         // hintText: 'Email',
         // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        // border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
         labelText: 'Harga',
         labelStyle: TextStyle(
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Warnadasar.defaultColor))
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          borderSide: BorderSide(color: Warnadasar.menuCar),)
       ),
       controller: txtPrice,
     );
+    final stok = TextFormField(
+      autofocus: false,
+      decoration: InputDecoration(
+        // hintText: 'Email',
+        // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        labelText: 'Stok',
+        labelStyle: TextStyle(
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.bold,
+          color: Colors.grey),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          borderSide: BorderSide(color: Warnadasar.menuCar),
+        )
+      ),
+      controller: txtStok,
+    );
     txtName.text = "";
     txtPrice.text = "";
+    txtStok.text = "";
     //print(_mySelection);
     showDialog(
       context: context,
@@ -325,31 +487,77 @@ List dataKategori = List();
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               return Container(
-                height: 250.0,
+                height: 350.0,
                 width: 300.0,
-                child: Column(
+                child: ListView(
                   children: <Widget>[
-                    invName,
-                    SizedBox(height: 10.0,),
-                    harga,
-                    SizedBox(height: 20.0,),
-                    DropdownButton(
-                      // : txtPhoneCompany,
-                      isExpanded: true,
-                      items: dataKategori.map((item) {
-                      return new DropdownMenuItem(
-                        child: new Text(item['description']),
-                        value: item['id'].toString(),
-                      );
-                      }).toList(),
-                      onChanged: (newVal) {
-                        setState(() {
-                          _mySelection = newVal;
-                          print("searchSource:" + _mySelection);
-                        });
-                      },
-                      value: _mySelection,
+                    Container(
+                      height: 70.0,
+                      child: InkWell(
+                        onTap: _chooseGallery,
+                        child: FutureBuilder(
+                          future: checkImageProfile(),
+                          builder:
+                              (BuildContext context, AsyncSnapshot<String> snapshot) {
+                            if (snapshot.hasData) {
+                              if (_imageFile == null) {
+                                return CircleAvatar(
+                                  radius: 75.0,
+                                  backgroundImage: NetworkImage(snapshot.data),
+                                  backgroundColor: Colors.transparent,
+                                );
+                              } else {
+                                return CircleAvatar(
+                                  radius: 75.0,
+                                  backgroundImage: FileImage(_imageFile),
+                                  backgroundColor: Colors.transparent,
+                                );
+                              }
+                            } else {
+                              return Text('No Image');
+                            }
+                          },
+                        ),
+                      ),
                     ),
+                    Container(
+                      child: Column(
+                        children: <Widget>[
+                          invName,
+                          SizedBox(height: 10.0,),
+                          harga,
+                          SizedBox(height: 20.0,),
+                          stok,
+                          SizedBox(height: 20.0,),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 10.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(23.0),
+                              border: Border.all(
+                              color: Warnadasar.menuCar, style: BorderStyle.solid, width: 0.80),
+                            ),
+                            child: DropdownButton(
+                                // : txtPhoneCompany,
+                                isExpanded: true,
+                                items: dataKategori.map((item) {
+                                return new DropdownMenuItem(
+                                  child: new Text(item['description']),
+                                  value: item['id'].toString(),
+                                );
+                                }).toList(),
+                                onChanged: (newVal) {
+                                  setState(() {
+                                    _mySelection = newVal;
+                                    print("searchSource:" + _mySelection);
+                                  });
+                                },
+                                value: _mySelection,
+                              ),
+                            )
+                          ]
+                      )
+                    ),
+                    
                   ],
                 ),
               );
@@ -358,9 +566,9 @@ List dataKategori = List();
           actions: <Widget>[
             RaisedButton(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
               ),
-              color: Colors.blue,
+              color: Warnadasar.menuCar,
               onPressed: () {
                 simpanInv();
                 Navigator.of(context).pop();
@@ -389,8 +597,9 @@ List dataKategori = List();
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Warnadasar.defaultColor))
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          borderSide: BorderSide(color: Warnadasar.menuCar),)
       ),
       controller: txtName,
     );
@@ -405,12 +614,31 @@ List dataKategori = List();
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Warnadasar.defaultColor))
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          borderSide: BorderSide(color: Warnadasar.menuCar),)
       ),
       controller: txtPrice,
     );
+    final stok = TextFormField(
+      autofocus: false,
+      decoration: InputDecoration(
+        // hintText: 'Email',
+        // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+        // border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        labelText: 'Stok',
+        labelStyle: TextStyle(
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.bold,
+          color: Colors.grey),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          borderSide: BorderSide(color: Warnadasar.menuCar),)
+      ),
+      controller: txtStok,
+    );
     txtName.text = data[index]['inventory_name'];
+    txtStok.text = data[index]['stock'].toString();
     txtPrice.text = data[index]['price'].toString();
     _mySelection=data[index]['category']['data']['id'].toString();
     //print(_mySelection);
@@ -422,31 +650,78 @@ List dataKategori = List();
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               return Container(
-                height: 250.0,
+                height: 350.0,
                 width: 300.0,
-                child: Column(
+                child: ListView(
                   children: <Widget>[
-                    invName,
-                    SizedBox(height: 10.0,),
-                    harga,
-                    SizedBox(height: 20.0,),
-                    DropdownButton(
-                      // : txtPhoneCompany,
-                      isExpanded: true,
-                      items: dataKategori.map((item) {
-                      return new DropdownMenuItem(
-                        child: new Text(item['description']),
-                        value: item['id'].toString(),
-                      );
-                      }).toList(),
-                      onChanged: (newVal) {
-                        setState(() {
-                          _mySelection = newVal;
-                          print("searchSource:" + _mySelection);
-                        });
-                      },
-                      value: _mySelection,
+                    Container(
+                      height: 70.0,
+                      child: InkWell(
+                        onTap: _chooseGallery,
+                        child: FutureBuilder(
+                          future: checkImageProfile(),
+                          builder:
+                              (BuildContext context, AsyncSnapshot<String> snapshot) {
+                            if (snapshot.hasData) {
+                              if (_imageFile == null) {
+                                return CircleAvatar(
+                                  radius: 75.0,
+                                  backgroundImage: NetworkImage(snapshot.data),
+                                  backgroundColor: Colors.transparent,
+                                );
+                              } else {
+                                return CircleAvatar(
+                                  radius: 75.0,
+                                  backgroundImage: FileImage(_imageFile),
+                                  backgroundColor: Colors.transparent,
+                                );
+                              }
+                            } else {
+                              return Text('No Image');
+                            }
+                          },
+                        ),
+                      ),
                     ),
+                    Container(
+                      child: Column(
+                        children: <Widget>[
+                          invName,
+                          SizedBox(height: 10.0,),
+
+                          harga,
+                          SizedBox(height: 20.0,),
+                          stok,
+                          SizedBox(height: 20.0,),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 10.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(23.0),
+                              border: Border.all(
+                              color: Warnadasar.menuCar, style: BorderStyle.solid, width: 0.80),
+                            ),
+                            child: DropdownButton(
+                            // : txtPhoneCompany,
+                              isExpanded: true,
+                              items: dataKategori.map((item) {
+                              return new DropdownMenuItem(
+                                child: new Text(item['description']),
+                                value: item['id'].toString(),
+                              );
+                              }).toList(),
+                              onChanged: (newVal) {
+                                setState(() {
+                                  _mySelection = newVal;
+                                  print("searchSource:" + _mySelection);
+                                });
+                              },
+                              value: _mySelection,
+                            ),
+                          )
+                        ]
+                      )
+                    ),
+                    
                   ],
                 ),
               );
@@ -455,12 +730,13 @@ List dataKategori = List();
           actions: <Widget>[
             RaisedButton(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
               ),
-              color: Colors.blue,
+              color: Warnadasar.menuCar,
               onPressed: () {
-                //Navigator.of(context).pop();
+                Navigator.of(context).pop();
                 updtaeInv(id);
+                getData();
               },
               child: Text(
                 'Simpan',
@@ -474,50 +750,5 @@ List dataKategori = List();
                               
   }
 
-  Future simpanInv() async{
-    // Showing CircularProgressIndicator.
-    setState(() {
-    });
- 
-    // Getting value from Controller
-    String name = txtName.text;
-    String price = txtPrice.text;
-    // Store all data with Param Name.
-    var data = {'category_id':_mySelection,'inventory_name': name, 'price'	: price};
   
-    // print(data);
-    // Starting Web API Call.
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String stringValue = prefs.getString('Token');
-    var response = await http.post(BaseUrl.simpanItemList, headers: { 'Accept':'application/json','Content-Type':'application/json','Authorization': 'Bearer ${stringValue}'}, body: json.encode(data));
- 
-    // Getting Server response into variable.
-    var message = jsonDecode(response.body);
-    var errorMessage;
-    // print(message);
-    if(message['data']['inventory_name'] == name){
-       getData();
-      //  Navigator.of(context).pop();
-    }
-    else {
-      errorMessage = 'Simpan gagal';
-      showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: new Text(errorMessage),
-          actions: <Widget>[
-            FlatButton(
-              child: new Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      }
-      );
-    }
-  }
-
 }
