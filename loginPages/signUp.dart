@@ -4,7 +4,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-// import '../pages/landingPages.dart';
+import '../default/baseurl.dart';
+import '../frontPages/landingPages.dart';
 import 'signIn.dart';
 
 class SignUpPage extends StatelessWidget {
@@ -46,7 +47,7 @@ class _SignUpPage1State extends State<SignUpPage1> {
   final txtAddress = TextEditingController();
   final txtPhoneCompany = TextEditingController();
 
-  final String url = "http://192.168.43.108:8080/beckend-daily/public/api/typecompany";
+  final String url = BaseUrl.url+"typecompany";
 
   List data = List(); //edited line
 
@@ -77,7 +78,7 @@ class _SignUpPage1State extends State<SignUpPage1> {
     visible = true ; 
     });
  
-    var url = 'http://192.168.43.107/api/auth/register';
+    var url = BaseUrl.url+'auth/register';
     // Getting value from Controller
     String name = txtName.text;
     String email = txtEmail.text;
@@ -154,10 +155,10 @@ class _SignUpPage1State extends State<SignUpPage1> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('Token', simpanToken);
     // Navigate to Profile Screen & Sending Email to Next Screen.
-      // Navigator.push(
-      // context,
-      //   MaterialPageRoute(builder: (context) => LandingPages())
-      // );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Landings())
+      );
     }
   }
 
@@ -168,7 +169,7 @@ class _SignUpPage1State extends State<SignUpPage1> {
       child: CircleAvatar(
         backgroundColor: Colors.transparent,
         radius: 80.0,
-        child: Image.asset('assets/logo.png'),
+        child: Image.asset('assets/2.png'),
       ),
     );
 
@@ -182,8 +183,9 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtName,
     );
@@ -198,8 +200,9 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtEmail,
     );
@@ -214,8 +217,9 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtPhone,
     );
@@ -230,8 +234,9 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtPassword,
     );
@@ -246,8 +251,9 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtNameCompany,
     );
@@ -263,8 +269,9 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtAddress,
     );
@@ -279,14 +286,15 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtPhoneCompany,
     );
 
     final signupButton = Container(
-      height: 40.0,
+      height: 55.0,
       child: Material(
         borderRadius: BorderRadius.circular(20.0),
         shadowColor: Colors.greenAccent,
@@ -353,35 +361,43 @@ class _SignUpPage1State extends State<SignUpPage1> {
                   logo,
                   SizedBox(height: 10.0),
                   name,
-                  SizedBox(height: 2.0),
+                  SizedBox(height: 5.0),
                   email,
-                  SizedBox(height: 2.0),
+                  SizedBox(height: 5.0),
                   phone,
-                  SizedBox(height: 2.0),
+                  SizedBox(height: 5.0),
                   password,
-                  SizedBox(height: 15.0),
-                  DropdownButton(
-                    // : txtPhoneCompany,
-                    isExpanded: true,
-                    items: data.map((item) {
-                      return new DropdownMenuItem(
-                        child: new Text(item['description']),
-                        value: item['id'].toString(),
-                      
-                      );
-                    }).toList(),
-                    onChanged: (newVal) {
-                      setState(() {
-                        _mySelection = newVal;
-                      });
-                    },
-                    value: _mySelection,
+                  SizedBox(height: 5.0),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(23.0),
+                      border: Border.all(
+                      style: BorderStyle.solid, width: 0.80),
+                    ),
+                    child: DropdownButton(
+                      // : txtPhoneCompany,
+                      isExpanded: true,
+                      items: data.map((item) {
+                        return new DropdownMenuItem(
+                          child: new Text(item['description']),
+                          value: item['id'].toString(),
+                        
+                        );
+                      }).toList(),
+                      onChanged: (newVal) {
+                        setState(() {
+                          _mySelection = newVal;
+                        });
+                      },
+                      value: _mySelection,
+                    )
                   ),
-                  SizedBox(height: 0.0),
+                  SizedBox(height: 5.0),
                   nameCompany,
-                  SizedBox(height: 2.0),
+                  SizedBox(height: 5.0),
                   address,
-                  SizedBox(height: 2.0),
+                  SizedBox(height: 5.0),
                   comapanyPhone,
                   SizedBox(height: 40.0),
                   signupButton,
