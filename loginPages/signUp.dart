@@ -155,8 +155,8 @@ class _SignUpPage1State extends State<SignUpPage1> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('Token', simpanToken);
     // Navigate to Profile Screen & Sending Email to Next Screen.
-      Navigator.push(
-      context,
+      Navigator.pushReplacement(
+        context,
         MaterialPageRoute(builder: (context) => Landings())
       );
     }
@@ -361,35 +361,43 @@ class _SignUpPage1State extends State<SignUpPage1> {
                   logo,
                   SizedBox(height: 10.0),
                   name,
-                  SizedBox(height: 2.0),
+                  SizedBox(height: 5.0),
                   email,
-                  SizedBox(height: 2.0),
+                  SizedBox(height: 5.0),
                   phone,
-                  SizedBox(height: 2.0),
+                  SizedBox(height: 5.0),
                   password,
-                  SizedBox(height: 15.0),
-                  DropdownButton(
-                    // : txtPhoneCompany,
-                    isExpanded: true,
-                    items: data.map((item) {
-                      return new DropdownMenuItem(
-                        child: new Text(item['description']),
-                        value: item['id'].toString(),
-                      
-                      );
-                    }).toList(),
-                    onChanged: (newVal) {
-                      setState(() {
-                        _mySelection = newVal;
-                      });
-                    },
-                    value: _mySelection,
+                  SizedBox(height: 5.0),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(23.0),
+                      border: Border.all(
+                      style: BorderStyle.solid, width: 0.80),
+                    ),
+                    child: DropdownButton(
+                      // : txtPhoneCompany,
+                      isExpanded: true,
+                      items: data.map((item) {
+                        return new DropdownMenuItem(
+                          child: new Text(item['description']),
+                          value: item['id'].toString(),
+                        
+                        );
+                      }).toList(),
+                      onChanged: (newVal) {
+                        setState(() {
+                          _mySelection = newVal;
+                        });
+                      },
+                      value: _mySelection,
+                    )
                   ),
-                  SizedBox(height: 0.0),
+                  SizedBox(height: 5.0),
                   nameCompany,
-                  SizedBox(height: 2.0),
+                  SizedBox(height: 5.0),
                   address,
-                  SizedBox(height: 2.0),
+                  SizedBox(height: 5.0),
                   comapanyPhone,
                   SizedBox(height: 40.0),
                   signupButton,
