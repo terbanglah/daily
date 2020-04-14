@@ -12,7 +12,7 @@ class Landings extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
+        primarySwatch: Colors.green
       ),
       debugShowCheckedModeBanner: false,
       home: showlanding(),
