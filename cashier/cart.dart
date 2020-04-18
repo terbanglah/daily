@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../cashier/saledetail.dart';
 import '../cashier/inventorycart.dart';
 import '../default/constan.dart';
 import '../model/constants.dart';
@@ -13,14 +14,32 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
+  final GlobalKey<ScaffoldState> _scaffoldkey = GlobalKey();
   final oCcy = new NumberFormat("#,##0", "en_US");
   final GlobalKey<RefreshIndicatorState> _refresh =
       GlobalKey<RefreshIndicatorState>();
   var loading = false;
   double amount = 0;
   final list = List<CartModel>();
+  var notif = false;
 
   TextEditingController qtyController = TextEditingController();
+  TextEditingController amountController = TextEditingController();
+  TextEditingController payController = TextEditingController();
+  TextEditingController refundController = TextEditingController();
+
+  _showMsg(BuildContext context, msg) {
+    final snackBar = SnackBar(
+      content: Text(msg),
+      action: SnackBarAction(
+        label: 'Close',
+        onPressed: () {
+          // Some code to undo the change!
+        },
+      ),
+    );
+    _scaffoldkey.currentState.showSnackBar(snackBar);
+  }
 
   Future<void> _readData() async {
     list.clear();
@@ -193,6 +212,149 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
+  dialogPayment(BuildContext context) {
+    if (list.length == 0) {
+      return _showMsg(context, 'Item dikasir tidak ada');
+    }
+    amountController.text = amount.toInt().toString();
+    payController.text = '0';
+    refundController.text =
+        (double.parse(payController.text).toInt() - amount.toInt()).toString();
+    notif = true;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return ListView(
+                padding: EdgeInsets.all(16.0),
+                shrinkWrap: true,
+                children: <Widget>[
+                  TextField(
+                    controller: amountController,
+                    readOnly: true,
+                    decoration: new InputDecoration(
+                      contentPadding: EdgeInsets.all(13.0),
+                      labelText: "Total Harga",
+                      fillColor: Colors.grey.shade200,
+                      filled: true,
+                      prefixText: 'Rp. ',
+                      border: new OutlineInputBorder(
+                        borderRadius: new BorderRadius.circular(20.0),
+                        borderSide: new BorderSide(),
+                      ),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  SizedBox(
+                    height: 8.0,
+                  ),
+                  TextField(
+                    controller: payController,
+                    decoration: new InputDecoration(
+                      contentPadding: EdgeInsets.all(13.0),
+                      labelText: "Bayar",
+                      errorText: notif ? 'Uang bayar tidak cukup !' : null,
+                      fillColor: Colors.white,
+                      prefixText: 'Rp. ',
+                      border: new OutlineInputBorder(
+                        borderRadius: new BorderRadius.circular(20.0),
+                        borderSide: new BorderSide(),
+                      ),
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (x) {
+                      setState(() {
+                        refundController.text =
+                            (double.parse(x).toInt() - amount.toInt())
+                                .toString();
+                        if (double.parse(refundController.text).toInt() < 0) {
+                          notif = true;
+                        } else {
+                          notif = false;
+                        }
+                      });
+                    },
+                  ),
+                  SizedBox(
+                    height: 8.0,
+                  ),
+                  TextField(
+                    controller: refundController,
+                    readOnly: true,
+                    decoration: new InputDecoration(
+                      contentPadding: EdgeInsets.all(13.0),
+                      labelText: "Kembalian",
+                      fillColor: Colors.grey.shade200,
+                      filled: true,
+                      prefixText: 'Rp. ',
+                      border: new OutlineInputBorder(
+                        borderRadius: new BorderRadius.circular(20.0),
+                        borderSide: new BorderSide(),
+                      ),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  SizedBox(
+                    height: 8.0,
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      _saveData(context);
+                    },
+                    color: Warnadasar.menuFood,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(15.0))),
+                    child: Container(
+                      //padding: EdgeInsets.all(8.0),
+                      height: 45.0,
+                      child: Center(
+                        child: Text(
+                          'Bayar',
+                          style: TextStyle(
+                            color: Colors.white,
+                            letterSpacing: 1.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  _saveData(BuildContext context) async {
+    if (double.parse(refundController.text).toInt() >= 0) {
+      List details = CartModel.encondeToJson(list);
+      var data = {
+        'payment_id': 1,
+        'amount': amountController.text,
+        'pay': payController.text,
+        'refund': refundController.text,
+        'data': details
+      };
+      var response = await CallApi().postData(data, 'sale');
+      var body = jsonDecode(response.body);
+      if (body['data'] != null) {
+        _deleteData('all');
+        Navigator.pop(context);
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => SaleDetail(body['data']['id'])));
+      } else {
+        print('SaveData : ${response.body}');
+      }
+    }
+  }
+
   _updateData(CartModel x) async {
     var data = {
       'qty': qtyController.text,
@@ -239,6 +401,7 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldkey,
       appBar: AppBar(
         backgroundColor: Warnadasar.menuFood,
         title: Center(
@@ -338,7 +501,9 @@ class _CartPageState extends State<CartPage> {
               child: MaterialButton(
                 height: 75.0,
                 color: Warnadasar.menuFood,
-                onPressed: () {},
+                onPressed: () {
+                  dialogPayment(context);
+                },
                 child: Text(
                   'Bayar',
                   style: TextStyle(
