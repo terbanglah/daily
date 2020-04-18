@@ -5,15 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../default/baseurl.dart';
+import '../default/constan.dart';
 import '../frontPages/landingPages.dart';
+import 'signUpSecond.dart';
 import 'signIn.dart';
 
 class SignUpPage extends StatelessWidget {
-  final routes = <String, WidgetBuilder>{
-    LoginPage.tag: (context) => LoginPage(),
-    SignUpPage1.tag: (context) => SignUpPage(),
-    // HomePage1.tag: (context) => HomePage(),
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +22,6 @@ class SignUpPage extends StatelessWidget {
         fontFamily: 'Nunito',
       ),
       home: SignUpPage1(),
-      routes: routes,
     );
   }
 }
@@ -68,103 +64,82 @@ class _SignUpPage1State extends State<SignUpPage1> {
   @override
   void initState() {
     super.initState();
-    this.getSWData();
+    // this.getSWData();
     
   }
 
-  Future register() async{
-    // Showing CircularProgressIndicator.
-    setState(() {
-    visible = true ; 
-    });
- 
-    var url = BaseUrl.url+'auth/register';
-    // Getting value from Controller
-    String name = txtName.text;
-    String email = txtEmail.text;
-    String phone = txtPhone.text;
-    String password = txtPassword.text;
-    String company = txtNameCompany.text;
-    String address = txtAddress.text;
-    String phonecompany = txtPhoneCompany.text;
-    // Store all data with Param Name.
-    var data = {'name': name, 'email'	: email,	'mobile_phone'	: phone,	'password'	: password,	'type_id'		: _mySelection,	'name_company'	: company,	'address'		: address,	'phone_company'	: phonecompany};
-  
-    // print(data);
-    // Starting Web API Call.
-    var response = await http.post(url, headers: { 'Accept':'application/json','Content-Type':'application/json' }, body: json.encode(data));
- 
-    // Getting Server response into variable.
-    var message = jsonDecode(response.body);
+  Future nextStep() async{
+    String namaUser = txtName.text;
+    String emailUser = txtEmail.text;
+    String passwordUser = txtPassword.text;
     var errorMessage;
-    // print(message);
-    if(message['message']=='The given data was invalid.'){
-      var data1 = message['errors'];
-      if(data1['name'] != null){
-        var data2 = data1['name'];
-        errorMessage = data2[0];
-      }
-      else if(data1['mobile_phone'] != null){
-        var data2 = data1['mobile_phone'];
-        errorMessage = data2[0];
-      }
-      else if(data1['password'] != null){
-        var data2 = data1['password'];
-        errorMessage = data2[0];
-      }
-      else if(data1['password'][0] == 'The password must be at least 8 characters.'){
-        var data2 = data1['password'];
-        errorMessage = data2[0];
-      }
-      else if(data1['name_company'] != null){
-        var data2 = data1['name_company'];
-        errorMessage = data2[0];
-      }
-      else if(data1['address'] != null){
-        var data2 = data1['address'];
-        errorMessage = data2[0];
-      }
-      else if(data1['phone_company'] != null){
-        var data2 = data1['phone_company'];
-        errorMessage = data2[0];
-      }
-      else {
-        var data2 = data1['email'];
-        errorMessage = data2[0];
-      }
-      // print(errorMessage);
+    if(namaUser == ""){
+      errorMessage = "Isi nama anda !!.";
       showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: new Text(errorMessage),
-          actions: <Widget>[
-            FlatButton(
-              child: new Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: new Text(errorMessage),
+            actions: <Widget>[
+              FlatButton(
+                child: new Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        }
+      );
     }
-    );
-  }
-  else if(message['data']['email'] == email){
-    var simpanToken = message['meta']['token'];
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('Token', simpanToken);
-    // Navigate to Profile Screen & Sending Email to Next Screen.
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => Landings())
+    else if(emailUser == ""){
+      errorMessage = "Isi e-Mail baru next";
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: new Text(errorMessage),
+            actions: <Widget>[
+              FlatButton(
+                child: new Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        }
+      );
+    }
+    else if(passwordUser == ""){
+      errorMessage = "Isi Password !!.";
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: new Text(errorMessage),
+            actions: <Widget>[
+              FlatButton(
+                child: new Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        }
+      );
+    }else{
+      Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SignUpPageSecond(namaUser,emailUser,passwordUser))
       );
     }
   }
-
-   @override
-   Widget build(BuildContext context) {
-     final logo = Hero(
+   
+  @override
+  Widget build(BuildContext context) {
+    final logo = Hero(
       tag: 'hero',
       child: CircleAvatar(
         backgroundColor: Colors.transparent,
@@ -206,24 +181,7 @@ class _SignUpPage1State extends State<SignUpPage1> {
       ),
       controller: txtEmail,
     );
-
-    final phone = TextFormField(
-      keyboardType: TextInputType.number,
-      autofocus: false,
-      // initialValue: 'alucard@gmail.com',
-      decoration: InputDecoration(
-        labelText: 'Phone Number',
-        labelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.bold,
-          color: Colors.grey),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(32.0)
-        ),
-      ),
-      controller: txtPhone,
-    );
-
+    
     final password = TextFormField(
       autofocus: false,
       // initialValue: 'some password',
@@ -241,75 +199,25 @@ class _SignUpPage1State extends State<SignUpPage1> {
       controller: txtPassword,
     );
 
-    final nameCompany = TextFormField(
-      keyboardType: TextInputType.text,
-      autofocus: false,
-      // initialValue: 'alucard@gmail.com',
-      decoration: InputDecoration(
-        labelText: 'Name Company',
-        labelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.bold,
-          color: Colors.grey),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(32.0)
-        ),
-      ),
-      controller: txtNameCompany,
-    );
-
-    final address = TextFormField(
-      keyboardType: TextInputType.text,
-      autofocus: false,
-      // initialValue: 'alucard@gmail.com',
-      maxLength: 250,
-      decoration: InputDecoration(
-        labelText: 'Address',
-        labelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.bold,
-          color: Colors.grey),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(32.0)
-        ),
-      ),
-      controller: txtAddress,
-    );
-
-    final comapanyPhone = TextFormField(
-      keyboardType: TextInputType.number,
-      autofocus: false,
-      // initialValue: 'alucard@gmail.com',
-      decoration: InputDecoration(
-        labelText: 'Company Phone',
-        labelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.bold,
-          color: Colors.grey),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(32.0)
-        ),
-      ),
-      controller: txtPhoneCompany,
-    );
-
     final signupButton = Container(
       height: 55.0,
       child: Material(
-        borderRadius: BorderRadius.circular(20.0),
+        borderRadius: BorderRadius.circular(32.0),
         shadowColor: Colors.greenAccent,
         color: Colors.green,
         elevation: 7.0,
         child: RaisedButton(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(32),
           ),
-          onPressed: () {register();},
+          onPressed: () {
+            nextStep();
+          },
           padding: EdgeInsets.all(12),
           color: Colors.green,
           child: Center(
             child: Text(
-              'SIGN UP',
+              'NEXT',
               style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -331,7 +239,7 @@ class _SignUpPage1State extends State<SignUpPage1> {
             borderRadius: BorderRadius.circular(24),
           ),
           onPressed: () {
-            Navigator.of(context).pushNamed(LoginPage.tag);
+            // Navigator.of(context).pushNamed(LoginP.tag);
           },
           padding: EdgeInsets.all(12),
           color: Colors.blueGrey,
@@ -349,66 +257,94 @@ class _SignUpPage1State extends State<SignUpPage1> {
     );
 
     return Scaffold(
-      // resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white,
-      body: ListView(
-          // crossAxisAlignment: CrossAxisAlignment.start,
+      body: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            colors: [
+              Colors.blueGrey[900],
+              Colors.blueGrey[700],
+              Colors.blueGrey[400]
+            ]
+          )
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Container(
-              padding: EdgeInsets.only(top: 30.0, left: 20.0, right: 20.0),
+            SizedBox(height: 55,),
+            Padding(
+              padding: EdgeInsets.all(20),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  logo,
-                  SizedBox(height: 10.0),
-                  name,
-                  SizedBox(height: 5.0),
-                  email,
-                  SizedBox(height: 5.0),
-                  phone,
-                  SizedBox(height: 5.0),
-                  password,
-                  SizedBox(height: 5.0),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.0),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(23.0),
-                      border: Border.all(
-                      style: BorderStyle.solid, width: 0.80),
-                    ),
-                    child: DropdownButton(
-                      // : txtPhoneCompany,
-                      isExpanded: true,
-                      items: data.map((item) {
-                        return new DropdownMenuItem(
-                          child: new Text(item['description']),
-                          value: item['id'].toString(),
-                        
-                        );
-                      }).toList(),
-                      onChanged: (newVal) {
-                        setState(() {
-                          _mySelection = newVal;
-                        });
-                      },
-                      value: _mySelection,
-                    )
-                  ),
-                  SizedBox(height: 5.0),
-                  nameCompany,
-                  SizedBox(height: 5.0),
-                  address,
-                  SizedBox(height: 5.0),
-                  comapanyPhone,
-                  SizedBox(height: 40.0),
-                  signupButton,
-                  SizedBox(height: 20.0),
-                  backButton,
-                  SizedBox(height: 20.0),
+                  Text("Register", style: TextStyle(color: Colors.white, fontSize: 40),),
+                  SizedBox(height: 10,),
+                  Text("Poin of Sales", style: TextStyle(color: Colors.white, fontSize: 18),),
                 ],
               ),
             ),
-          ]
-        )
-      );
-   }
- }
+            SizedBox(height: 20),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(45), topRight: Radius.circular(35))
+                ),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.only(left:35, right: 35),
+                    child: Column(
+                      children: <Widget>[
+                        SizedBox(height: 60,),
+                        name,
+                        SizedBox(height: 20,),
+                        email,
+                        SizedBox(height: 20,),
+                        password,
+                        SizedBox(height: 40,),
+                        signupButton,
+
+                      //   Text("Continue with social media", style: TextStyle(color: Colors.grey),),
+                      //   SizedBox(height: 30,),
+                      //   Row(
+                      //     children: <Widget>[
+                      //       Expanded(
+                      //         child: Container(
+                      //           height: 50,
+                      //           decoration: BoxDecoration(
+                      //             borderRadius: BorderRadius.circular(50),
+                      //             color: Colors.blue
+                      //           ),
+                      //           child: Center(
+                      //             child: Text("Facebook", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //       SizedBox(width: 30,),
+                      //       Expanded(
+                      //         child: Container(
+                      //           height: 50,
+                      //           decoration: BoxDecoration(
+                      //             borderRadius: BorderRadius.circular(50),
+                      //             color: Warnadasar.menuFood
+                      //           ),
+                      //           child: Center(
+                      //             child: Text("Gmail", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                      //           ),
+                      //         ),
+                      //       )
+                      //     ],
+                      //   )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
