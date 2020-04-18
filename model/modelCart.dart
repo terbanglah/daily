@@ -14,4 +14,17 @@ class CartModel {
     this.qty,
     this.image,
   );
+
+  Map<String, dynamic> toJson() {
+    return {
+      "inventory_id": this.inventoryId,
+      "qty": this.qty,
+    };
+  }
+
+  static List encondeToJson(List<CartModel> list) {
+    List jsonList = List();
+    list.map((item) => jsonList.add(item.toJson())).toList();
+    return jsonList;
+  }
 }
