@@ -22,6 +22,7 @@ class _CartPageState extends State<CartPage> {
   double amount = 0;
   final list = List<CartModel>();
   var notif = false;
+  int myPayment = 1;
 
   TextEditingController qtyController = TextEditingController();
   TextEditingController amountController = TextEditingController();
@@ -231,6 +232,36 @@ class _CartPageState extends State<CartPage> {
                 padding: EdgeInsets.all(16.0),
                 shrinkWrap: true,
                 children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.fromLTRB(10.0, 0, 10.0, 0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.0),
+                      border: Border.all(
+                        style: BorderStyle.solid,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton(
+                        isExpanded: true,
+                        items: <DropdownMenuItem<int>>[
+                          new DropdownMenuItem(
+                            child: new Text('Cash'),
+                            value: 1,
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            myPayment = value;
+                          });
+                        },
+                        value: myPayment,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 8.0,
+                  ),
                   TextField(
                     controller: amountController,
                     readOnly: true,
@@ -252,6 +283,7 @@ class _CartPageState extends State<CartPage> {
                   ),
                   TextField(
                     controller: payController,
+                    autofocus: true,
                     decoration: new InputDecoration(
                       contentPadding: EdgeInsets.all(13.0),
                       labelText: "Bayar",
@@ -297,7 +329,7 @@ class _CartPageState extends State<CartPage> {
                     keyboardType: TextInputType.number,
                   ),
                   SizedBox(
-                    height: 8.0,
+                    height: 15.0,
                   ),
                   RaisedButton(
                     onPressed: () {
@@ -307,7 +339,6 @@ class _CartPageState extends State<CartPage> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(15.0))),
                     child: Container(
-                      //padding: EdgeInsets.all(8.0),
                       height: 45.0,
                       child: Center(
                         child: Text(
@@ -334,7 +365,7 @@ class _CartPageState extends State<CartPage> {
     if (double.parse(refundController.text).toInt() >= 0) {
       List details = CartModel.encondeToJson(list);
       var data = {
-        'payment_id': 1,
+        'payment_id': myPayment,
         'amount': amountController.text,
         'pay': payController.text,
         'refund': refundController.text,
