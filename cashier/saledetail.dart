@@ -80,7 +80,7 @@ class _SaleDetailState extends State<SaleDetail> {
                     color: Warnadasar.menuFood,
                     elevation: 10,
                     child: Container(
-                      height: 160.0,
+                      height: 175.0,
                       child: Column(
                         children: <Widget>[
                           ListTile(

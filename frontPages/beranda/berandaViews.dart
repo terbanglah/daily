@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../sale/sales.dart';
 import '../../default/constan.dart';
 import '../../loginPages/signIn.dart';
 import '../../cashier/cart.dart';
@@ -113,6 +114,15 @@ class _BerandaViewState extends State<BerandaView> {
                 //     // Center(child: Text('Coba'));
                 //     return _buildMenuBottomSheet();
                 //   }
+                // );
+              }
+              else if(gojekService.title== 'PENJUALAN'){
+                Navigator.push(context, 
+                  MaterialPageRoute(builder: (context) => SalePage())
+                );
+                // Navigator.push(
+                //   context,
+                //     MaterialPageRoute(builder: (context) => Inventory())
                 // );
               }
               else if(gojekService.title== 'ITEMS'){
