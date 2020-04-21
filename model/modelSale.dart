@@ -1,4 +1,5 @@
 class SaleModel {
+  bool isExpanded;
   final int id;
   final String saleNo;
   final int paymentId;
@@ -10,6 +11,7 @@ class SaleModel {
   final List<SaleDetailModel> details;
 
   SaleModel(
+    this.isExpanded,
     this.id,
     this.saleNo,
     this.paymentId,
@@ -23,6 +25,7 @@ class SaleModel {
 }
 
 class SaleDetailModel {
+  final int saleId;
   final int id;
   final int inventoryId;
   final String inventoryName;
@@ -33,6 +36,7 @@ class SaleDetailModel {
   final String category;
 
   SaleDetailModel(
+    this.saleId,
     this.id,
     this.inventoryId,
     this.inventoryName,
