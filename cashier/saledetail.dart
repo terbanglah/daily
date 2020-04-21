@@ -16,7 +16,7 @@ class _SaleDetailState extends State<SaleDetail> {
   final oCcy = new NumberFormat("#,##0", "en_US");
   final listdetail = List<SaleDetailModel>();
   var loading = false;
-  var sale = SaleModel(null, null, null, null, null, null, null, null, null);
+  var sale = SaleModel(null,null, null, null, null, null, null, null, null, null);
 
   Future<void> _readData() async {
     setState(() {
@@ -29,6 +29,7 @@ class _SaleDetailState extends State<SaleDetail> {
     if (data['data'] != null) {
       data['data']['sale_details']['data'].forEach((api) {
         final ac = SaleDetailModel(
+          data['data']['id'],
           api['id'],
           api['inventory_id'],
           api['inventory_name'],
@@ -41,6 +42,7 @@ class _SaleDetailState extends State<SaleDetail> {
         listdetail.add(ac);
       });
       sale = SaleModel(
+        false,
         data['data']['id'],
         data['data']['sale_no'],
         data['data']['type_payment']['payment_id'],
@@ -163,21 +165,21 @@ class _SaleDetailState extends State<SaleDetail> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                SizedBox(
-                                  height: 5.0,
-                                ),
-                                Text(
-                                  'kasir :',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                Text(
-                                  sale.createBy,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                )
+                                // SizedBox(
+                                //   height: 5.0,
+                                // ),
+                                // Text(
+                                //   'kasir :',
+                                //   style: TextStyle(
+                                //     color: Colors.white,
+                                //   ),
+                                // ),
+                                // Text(
+                                //   sale.createBy,
+                                //   style: TextStyle(
+                                //     color: Colors.white,
+                                //   ),
+                                // )
                               ],
                             ),
                           ),
