@@ -256,11 +256,12 @@ class _SalePageState extends State<SalePage> {
                                         InkWell(
                                           onTap: () {
                                             Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        SaleDetailpage(
-                                                            sale.id)));
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    SaleDetailpage(sale),
+                                              ),
+                                            );
                                           },
                                           child: Container(
                                             height: 50.0,

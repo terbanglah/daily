@@ -6,8 +6,8 @@ import '../model/modelSale.dart';
 import '../default/constan.dart';
 
 class SaleDetailpage extends StatefulWidget {
-  final int saleId;
-  SaleDetailpage(this.saleId);
+  final SaleModel saleModel;
+  SaleDetailpage(this.saleModel);
   @override
   _SaleDetailpageState createState() => _SaleDetailpageState();
 }
@@ -22,7 +22,7 @@ class _SaleDetailpageState extends State<SaleDetailpage> {
     setState(() {
       loading = true;
     });
-    var response = await CallApi().getData('sale/${widget.saleId.toString()}');
+    var response = await CallApi().getData('sale/${widget.saleModel.id}');
     final data = jsonDecode(response.body);
     print('Sale Detail : $data');
     if (data['data'] != null) {
@@ -59,7 +59,7 @@ class _SaleDetailpageState extends State<SaleDetailpage> {
       appBar: AppBar(
         backgroundColor: Warnadasar.menuShop,
         title: Text(
-          'Penjualan #${widget.saleId}',
+          'Penjualan #${widget.saleModel.saleNo}',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18.0,
