@@ -22,6 +22,7 @@ class _CartPageState extends State<CartPage> {
   double amount = 0;
   final list = List<CartModel>();
   var notif = false;
+  var notifstock = false;
   int myPayment = 1;
 
   TextEditingController qtyController = TextEditingController();
@@ -58,6 +59,7 @@ class _CartPageState extends State<CartPage> {
           api['inventory']['id'],
           api['inventory']['inventory_name'],
           api['inventory']['price'] + .0,
+          api['inventory']['stock'],
           api['qty'],
           api['inventory']['image'],
         );
@@ -139,74 +141,104 @@ class _CartPageState extends State<CartPage> {
 
   dialogUpdate(CartModel x) {
     qtyController.text = x.qty.toString();
+    notifstock = false;
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
-          child: ListView(
-            shrinkWrap: true,
-            children: <Widget>[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return ListView(
+                shrinkWrap: true,
                 children: <Widget>[
-                  ClipRRect(
-                    child: Image.network(
-                      x.image,
-                      height: 200,
-                      fit: BoxFit.fill,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      ClipRRect(
+                        child: Image.network(
+                          x.image,
+                          height: 200,
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                      ListTile(
+                        title: Text(
+                          x.inventoryName,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            SizedBox(height: 3.0),
+                            Text(
+                              'Rp. ' + oCcy.format(x.price).toString(),
+                              style: TextStyle(color: Colors.red),
+                            ),
+                            SizedBox(height: 4.0),
+                            Text(
+                              'Sisa Stok : ${x.stock}',
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 11.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  ListTile(
-                    title: Text(
-                      x.inventoryName,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      'Rp. ' + oCcy.format(x.price).toString(),
-                      style: TextStyle(color: Colors.red),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(20.0, 0, 15.0, 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Container(
+                          width: 140.0,
+                          child: TextField(
+                            controller: qtyController,
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.all(0.0),
+                              prefixText: 'Kuantitas :  ',
+                              errorText: notifstock ? 'Stok tidak cukup' : null,
+                            ),
+                            keyboardType: TextInputType.number,
+                            onChanged: (z) {
+                              print(z);
+                              setState(() {
+                                if (int.parse(z) > x.stock) {
+                                  notifstock = true;
+                                } else {
+                                  notifstock = false;
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                        Container(
+                          width: 100,
+                          child: RaisedButton(
+                            onPressed: () {
+                              _updateData(x, context);
+                            },
+                            disabledColor: Colors.grey,
+                            color: Warnadasar.menuFood,
+                            child: Text(
+                              'Ubah',
+                              style: TextStyle(
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
                     ),
                   ),
                 ],
-              ),
-              Container(
-                padding: EdgeInsets.fromLTRB(20.0, 0, 15.0, 20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Container(
-                      width: 140.0,
-                      child: TextField(
-                        controller: qtyController,
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.all(0.0),
-                          prefixText: 'Kuantitas :  ',
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                    Container(
-                      width: 100,
-                      child: RaisedButton(
-                        onPressed: () {
-                          _updateData(x);
-                          Navigator.pop(context);
-                        },
-                        disabledColor: Colors.grey,
-                        color: Warnadasar.menuFood,
-                        child: Text(
-                          'Ubah',
-                          style: TextStyle(
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
+              );
+            },
           ),
         );
       },
@@ -386,19 +418,20 @@ class _CartPageState extends State<CartPage> {
     }
   }
 
-  _updateData(CartModel x) async {
-    var data = {
-      'qty': qtyController.text,
-    };
-    var response = await CallApi().putData(data, 'cart/${x.id}');
-    //print(response.body);
-    final body = jsonDecode(response.body);
-    if (body['data'] != null) {
-      setState(() {
+  _updateData(CartModel x, BuildContext context) async {
+    if (!notifstock) {
+      var data = {
+        'qty': qtyController.text,
+      };
+      var response = await CallApi().putData(data, 'cart/${x.id}');
+      //print(response.body);
+      final body = jsonDecode(response.body);
+      if (body['data'] != null) {
         _readData();
-      });
-    } else {
-      print(data);
+        Navigator.pop(context);
+      } else {
+        print(data);
+      }
     }
   }
 
@@ -438,7 +471,10 @@ class _CartPageState extends State<CartPage> {
         title: Center(
           child: Text(
             'Kasir',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+            ),
           ),
         ),
         iconTheme: IconThemeData(color: Colors.white),

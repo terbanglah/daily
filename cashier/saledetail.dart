@@ -16,7 +16,7 @@ class _SaleDetailState extends State<SaleDetail> {
   final oCcy = new NumberFormat("#,##0", "en_US");
   final listdetail = List<SaleDetailModel>();
   var loading = false;
-  var sale = SaleModel(null,null, null, null, null, null, null, null, null, null);
+  var sale = SaleModel(null,null, null, null, null, null, null, null, null, null, null);
 
   Future<void> _readData() async {
     setState(() {
@@ -29,7 +29,6 @@ class _SaleDetailState extends State<SaleDetail> {
     if (data['data'] != null) {
       data['data']['sale_details']['data'].forEach((api) {
         final ac = SaleDetailModel(
-          data['data']['id'],
           api['id'],
           api['inventory_id'],
           api['inventory_name'],
@@ -51,6 +50,7 @@ class _SaleDetailState extends State<SaleDetail> {
         data['data']['pay'] + .0,
         data['data']['refund'] + .0,
         data['data']['created_by'],
+        data['data']['publish'],
         listdetail,
       );
       setState(() {

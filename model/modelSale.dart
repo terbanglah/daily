@@ -7,7 +7,8 @@ class SaleModel {
   final double amount;
   final double pay;
   final double refund;
-  final String createBy;
+  final String createdBy;
+  final String createdAt;
   final List<SaleDetailModel> details;
 
   SaleModel(
@@ -19,13 +20,13 @@ class SaleModel {
     this.amount,
     this.pay,
     this.refund,
-    this.createBy,
+    this.createdBy,
+    this.createdAt,
     this.details,
   );
 }
 
 class SaleDetailModel {
-  final int saleId;
   final int id;
   final int inventoryId;
   final String inventoryName;
@@ -36,7 +37,6 @@ class SaleDetailModel {
   final String category;
 
   SaleDetailModel(
-    this.saleId,
     this.id,
     this.inventoryId,
     this.inventoryName,
