@@ -28,7 +28,7 @@ class _SignUpState extends State<SignUp> {
 
   final String url = BaseUrl.url+"typecompany";
 
-  List data = List(); //edited line
+  List data = List();
 
   Future<String> getSWData() async {
     var res = await http
