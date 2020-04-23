@@ -151,13 +151,13 @@ class _LoginState extends State<Login> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            SizedBox(height: 55,),
+            SizedBox(height: 70,),
             Padding(
               padding: EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  Text("Login", style: TextStyle(color: Colors.white, fontSize: 40),),
+                  Image.asset('logoDofly.png', width: 70.0),
                   SizedBox(height: 10,),
                   Text("Poin of Sales", style: TextStyle(color: Colors.white, fontSize: 18),),
                 ],
@@ -196,7 +196,7 @@ class _LoginState extends State<Login> {
                               onPressed: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => SignUpPage())
+                                  MaterialPageRoute(builder: (context) => SignUp())
                                 );
                               },
                               child: Text(
