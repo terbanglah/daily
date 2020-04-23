@@ -164,7 +164,7 @@ class _InventoryCartState extends State<InventoryCart> {
                     children: <Widget>[
                       Image.network(
                         z.image,
-                        height: 180,
+                        height: 200,
                         fit: BoxFit.fill,
                       ),
                       ListTile(
@@ -204,6 +204,7 @@ class _InventoryCartState extends State<InventoryCart> {
                                 }
                               });
                             },
+                            autofocus: true,
                           ),
                         ),
                         Container(
@@ -247,6 +248,7 @@ class _InventoryCartState extends State<InventoryCart> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       key: _scaffoldkey,
       appBar: AppBar(
         actions: <Widget>[
@@ -290,7 +292,10 @@ class _InventoryCartState extends State<InventoryCart> {
         title: Center(
           child: Text(
             'Item',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.0,
+            ),
           ),
         ),
         backgroundColor: Warnadasar.menuFood,

@@ -3,6 +3,7 @@ class CartModel {
   final int inventoryId;
   final String inventoryName;
   final double price;
+  final int stock;
   final int qty;
   final String image;
 
@@ -11,6 +12,7 @@ class CartModel {
     this.inventoryId,
     this.inventoryName,
     this.price,
+    this.stock,
     this.qty,
     this.image,
   );
