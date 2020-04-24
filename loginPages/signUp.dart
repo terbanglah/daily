@@ -154,6 +154,7 @@ class _SignUpState extends State<SignUp> {
     var simpanToken = message['meta']['token'];
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('Token', simpanToken);
+    prefs.setString('User', json.encode(message['data']));
     // Navigate to Profile Screen & Sending Email to Next Screen.
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute (builder: (context) {
@@ -442,12 +443,7 @@ class _SignUpState extends State<SignUp> {
                                             duration: Duration(milliseconds: 500),
                                             curve: Curves.easeInOutQuint);
                                         }else if(_currentPage==1){
-                                          Navigator.of(context).pushAndRemoveUntil(
-                                            MaterialPageRoute (builder: (context) {
-                                              return Landings();
-                                            }),
-                                            (Route<dynamic> route) => false
-                                          );
+                                          register();
                                         }
                                       },
                                       padding: EdgeInsets.all(12),
