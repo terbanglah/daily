@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../default/baseUrl.dart';
+import '../default/baseurl.dart';
 import '../frontPages/landingPages.dart';
 
 class SignUp extends StatefulWidget {
@@ -28,7 +28,7 @@ class _SignUpState extends State<SignUp> {
 
   final String url = BaseUrl.url+"typecompany";
 
-  List data = List(); //edited line
+  List data = List();
 
   Future<String> getSWData() async {
     var res = await http
@@ -154,6 +154,7 @@ class _SignUpState extends State<SignUp> {
     var simpanToken = message['meta']['token'];
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('Token', simpanToken);
+    prefs.setString('User', json.encode(message['data']));
     // Navigate to Profile Screen & Sending Email to Next Screen.
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute (builder: (context) {
@@ -442,12 +443,7 @@ class _SignUpState extends State<SignUp> {
                                             duration: Duration(milliseconds: 500),
                                             curve: Curves.easeInOutQuint);
                                         }else if(_currentPage==1){
-                                          Navigator.of(context).pushAndRemoveUntil(
-                                            MaterialPageRoute (builder: (context) {
-                                              return Landings();
-                                            }),
-                                            (Route<dynamic> route) => false
-                                          );
+                                          register();
                                         }
                                       },
                                       padding: EdgeInsets.all(12),
