@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'dart:async';
-
 import '../loginPages/signIn.dart';
-class AkunUser extends StatefulWidget {
+import 'kategori.dart';
+
+class InfoUser extends StatefulWidget {
   @override
-  _AkunUserState createState() => _AkunUserState();
+  _InfoUserState createState() => _InfoUserState();
 }
 
-class _AkunUserState extends State<AkunUser> {
-  startLoading() async{
+class _InfoUserState extends State<InfoUser> {
+  logOut() async{
     SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.clear();
     Navigator.of(context).pushAndRemoveUntil(
@@ -24,27 +23,28 @@ class _AkunUserState extends State<AkunUser> {
   }
   @override
   Widget build(BuildContext context) {
-    final logOutButton = Container(
+      final logoutnButton = Container(
       height: 45.0,
       child: Material(
-        borderRadius: BorderRadius.circular(24.0),
-        shadowColor: Colors.transparent,
-        color: Colors.blueGrey.shade400,
+        borderRadius: BorderRadius.circular(32.0),
+        shadowColor: Colors.white,
+        color: Colors.blueGrey.shade800,
         elevation: 7.0,
         child: RaisedButton(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: BorderSide(color: Colors.blueGrey.shade400,width: 2.0)
+            borderRadius: BorderRadius.circular(32),
+            side: BorderSide(color: Colors.blueGrey.shade800,width: 2.0)
           ),
-          
-          onPressed: () {startLoading();},
+          onPressed: () {
+            logOut();
+          },
           padding: EdgeInsets.all(12),
           color: Colors.white,
           child: Center(
             child: Text(
-              'LOGOUT',
+              'Log Out',
               style: TextStyle(
-              color: Colors.blueGrey.shade400,
+              color: Colors.blueGrey.shade700,
               fontWeight: FontWeight.bold,
               fontFamily: 'Montserrat'),
             ),
@@ -53,52 +53,117 @@ class _AkunUserState extends State<AkunUser> {
       ),
     );
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size(double.infinity, 100),
-        child: Container(
-          decoration: BoxDecoration(
-            boxShadow: [BoxShadow(
-              color: Colors.black12,
-              spreadRadius: 5,
-              blurRadius: 2
-            )]
-          ),
-          width: MediaQuery.of(context).size.width,
-          height: 90,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              // borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20),bottomRight: Radius.circular(20))
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        iconTheme: IconThemeData(
+          color: Colors.blueGrey.shade800
+        ),
+        title: 
+          Text('Profil',
+            style: GoogleFonts.openSans(
+                textStyle: TextStyle(
+                color: Colors.blueGrey.shade800,
+                fontSize: 18,
+                fontWeight: FontWeight.bold
+              )
             ),
-            child: Container(
-              padding: EdgeInsets.only(left: 20.0,top: 20.0, right: 20.0),
-              margin: EdgeInsets.fromLTRB(0,20, 0, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(Icons.navigate_before,size: 28,color: Colors.transparent,),
-                  Image.asset('2.png',width: 70.0,),
-                  Icon(Icons.more_vert ,color: Colors.transparent,),
-                ],
+        ),
+      ),
+      body: new ListView(
+        children: <Widget>[
+          ListTile(
+            title: 
+              Text(
+                "Info",
+                style: GoogleFonts.openSans(
+                  textStyle: TextStyle(
+                  color: Colors.blueGrey.shade700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold
+                )
               ),
             ),
           ),
-        ),
-      ),
-      backgroundColor: Colors.white,
-      body: ListView(
-        children: <Widget>[
-          Container(
-            padding: EdgeInsets.only(top: 35.0, left: 20.0, right: 20.0),
-              child: Column(
-                children: <Widget>[
-                  logOutButton,
-                ],
-              )
+          ListTile(
+            title: 
+              Text(
+                'Aktifasi',
+                style: GoogleFonts.openSans(
+                  textStyle: TextStyle(
+                  color: Colors.blueGrey.shade700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold
+                )
+              ),
+            ),
+            leading: 
+              Icon(
+                Icons.schedule,
+                color: Colors.blueGrey.shade700,
+              ),
+            trailing: 
+              Icon(
+                Icons.keyboard_arrow_right,
+                color: Colors.blueGrey.shade700,
+              ),
+          ),
+          ListTile(
+            onTap: (){
+              Navigator.push(context, 
+                MaterialPageRoute(builder: (context)=>Kategori())
+              );
+            },
+            title: 
+              Text(
+                'Kategori Menu',
+                style: GoogleFonts.openSans(
+                  textStyle: TextStyle(
+                  color: Colors.blueGrey.shade700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold
+                )
+              ),
+            ),
+            leading: 
+              Icon(
+                Icons.book,
+                color: Colors.blueGrey.shade700,
+              ),
+            trailing: 
+              Icon(
+                Icons.keyboard_arrow_right,
+                color: Colors.blueGrey.shade700,
+              ),
+          ),
+          ListTile(
+            title: 
+              Text(
+                'Tentang Aplikasi',
+                style: GoogleFonts.openSans(
+                  textStyle: TextStyle(
+                  color: Colors.blueGrey.shade700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold
+                )
+              ),
+            ),
+            leading: 
+              Icon(
+                Icons.info,
+                color: Colors.blueGrey.shade700,
+              ),
+            trailing: 
+              Icon(
+                Icons.keyboard_arrow_right,
+                color: Colors.blueGrey.shade700,
+              ),
+          ),
+          SizedBox(height: 45.0,),
+          ListTile(
+            title: logoutnButton,
           )
         ],
-      )
+      ),
     );
   }
 }

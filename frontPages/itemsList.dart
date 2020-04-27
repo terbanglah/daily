@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
@@ -277,42 +278,37 @@ List dataKategori = List();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size(double.infinity, 100),
-        child: Container(
-          decoration: BoxDecoration(
-            boxShadow: [BoxShadow(
-              color: Colors.black12,
-              spreadRadius: 5,
-              blurRadius: 2
-            )]
-          ),
-          width: MediaQuery.of(context).size.width,
-          height: 90,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Warnadasar.menuCar,
-              // borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20),bottomRight: Radius.circular(20))
-            ),
-            child: Container(
-              padding: EdgeInsets.only(top: 20.0),
-              margin: EdgeInsets.fromLTRB(0,20, 0, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(Icons.navigate_before,size: 28,color: Colors.transparent,),
-                  Image.asset('1.png', width: 70.0),
-                  // Text("Items",style: TextStyle(fontSize: 20,color: Warnadasar.white, fontWeight: FontWeight.bold),),
-                  Icon(Icons.navigate_before,color: Colors.transparent,),
-                ],
-              ),
-            ),
-          ),
+      appBar: AppBar(
+        backgroundColor: Color(0xffe86f16),
+        iconTheme: IconThemeData(
+          color: Colors.white
         ),
+        title: 
+          Text(
+            "Item",
+            style: GoogleFonts.openSans(
+                textStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold
+              )
+            ),
+          ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.add), 
+            onPressed: (){
+              _onPressAdd();
+            }
+          ),
+          IconButton(
+            icon: Icon(Icons.search), 
+            onPressed: (){
+              
+            }
+          )
+        ],
       ),
-      backgroundColor: Colors.blueGrey.shade100,
-      
       body: Container(
           
           margin: EdgeInsets.only(top: 10.0, right: 10.0, left: 10.0, bottom: 10.0), //SET MARGIN DARI CONTAINER
@@ -433,14 +429,14 @@ List dataKategori = List();
             },
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-        onPressed: (){
-          _onPressAdd();
-        },
-        tooltip: 'Increment',
-        backgroundColor: Warnadasar.menuOther,
-        child: Icon(Icons.add),
-      ),
+      //   floatingActionButton: FloatingActionButton(
+      //   onPressed: (){
+      //     _onPressAdd();
+      //   },
+      //   tooltip: 'Increment',
+      //   backgroundColor: Warnadasar.menuOther,
+      //   child: Icon(Icons.add),
+      // ),
     );
   }
 
