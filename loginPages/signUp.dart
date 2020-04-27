@@ -1,40 +1,20 @@
-import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// import '../pages/landingPages.dart';
-import 'signIn.dart';
+import 'package:http/http.dart' as http;
+import '../default/baseurl.dart';
+import '../frontPages/landingPages.dart';
 
-class SignUpPage extends StatelessWidget {
-  final routes = <String, WidgetBuilder>{
-    LoginPage.tag: (context) => LoginPage(),
-    SignUpPage1.tag: (context) => SignUpPage(),
-    // HomePage1.tag: (context) => HomePage(),
-  };
-
+class SignUp extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Kodeversitas',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.lightBlue,
-        fontFamily: 'Nunito',
-      ),
-      home: SignUpPage1(),
-      routes: routes,
-    );
-  }
+  _SignUpState createState() => _SignUpState();
 }
- class SignUpPage1 extends StatefulWidget {
-   static String tag = 'signup-page';
-   @override
-   _SignUpPage1State createState() => _SignUpPage1State();
- }
- 
-class _SignUpPage1State extends State<SignUpPage1> {
+
+class _SignUpState extends State<SignUp> {
+  final int _numPages = 2;
+  final PageController _pageController = PageController(initialPage: 0);
+  int _currentPage = 0;
   String _mySelection='1';
   String item='1';
   bool visible = false ;
@@ -46,9 +26,9 @@ class _SignUpPage1State extends State<SignUpPage1> {
   final txtAddress = TextEditingController();
   final txtPhoneCompany = TextEditingController();
 
-  final String url = "http://192.168.43.108:8080/beckend-daily/public/api/typecompany";
+  final String url = BaseUrl.url+"typecompany";
 
-  List data = List(); //edited line
+  List data = List();
 
   Future<String> getSWData() async {
     var res = await http
@@ -68,7 +48,28 @@ class _SignUpPage1State extends State<SignUpPage1> {
   void initState() {
     super.initState();
     this.getSWData();
-    
+  }
+
+  List<Widget> _buildPageIndicator() {
+    List<Widget> list = [];
+    for (int i = 0; i < _numPages; i++) {
+      list.add(i == _currentPage ? _indicator(true) : _indicator(false));
+    }
+    return list;
+  }
+
+  Widget _indicator(bool isActive) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 150),
+      margin: EdgeInsets.symmetric(horizontal: 8.0),
+      padding: EdgeInsets.only(bottom: 10.0),
+      height: 8.0,
+      width: isActive ? 24.0 : 16.0,
+      decoration: BoxDecoration(
+        color: isActive ? Colors.blueGrey.shade700 : Colors.blueGrey.shade300,
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+      ),
+    );
   }
 
   Future register() async{
@@ -77,7 +78,7 @@ class _SignUpPage1State extends State<SignUpPage1> {
     visible = true ; 
     });
  
-    var url = 'http://192.168.43.107/api/auth/register';
+    var url = BaseUrl.url+'auth/register';
     // Getting value from Controller
     String name = txtName.text;
     String email = txtEmail.text;
@@ -146,32 +147,26 @@ class _SignUpPage1State extends State<SignUpPage1> {
             ),
           ],
         );
+      }
+      );
     }
-    );
-  }
-  else if(message['data']['email'] == email){
+    else if(message['data']['email'] == email){
     var simpanToken = message['meta']['token'];
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('Token', simpanToken);
+    prefs.setString('User', json.encode(message['data']));
     // Navigate to Profile Screen & Sending Email to Next Screen.
-      // Navigator.push(
-      // context,
-      //   MaterialPageRoute(builder: (context) => LandingPages())
-      // );
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute (builder: (context) {
+          return Landings();
+        }),
+        (Route<dynamic> route) => false
+      );
     }
   }
 
-   @override
-   Widget build(BuildContext context) {
-     final logo = Hero(
-      tag: 'hero',
-      child: CircleAvatar(
-        backgroundColor: Colors.transparent,
-        radius: 80.0,
-        child: Image.asset('assets/logo.png'),
-      ),
-    );
-
+  @override
+  Widget build(BuildContext context) {
     final name = TextFormField(
       keyboardType: TextInputType.text,
       autofocus: false,
@@ -182,8 +177,9 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtName,
     );
@@ -198,10 +194,28 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtEmail,
+    );
+    
+    final password = TextFormField(
+      autofocus: false,
+      // initialValue: 'some password',
+      obscureText: true,
+      decoration: InputDecoration(
+        labelText: 'Password',
+        labelStyle: TextStyle(
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.bold,
+          color: Colors.grey),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
+      ),
+      controller: txtPassword,
     );
 
     final phone = TextFormField(
@@ -214,28 +228,13 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtPhone,
     );
-
-    final password = TextFormField(
-      autofocus: false,
-      // initialValue: 'some password',
-      obscureText: true,
-      decoration: InputDecoration(
-        labelText: 'Password',
-        labelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.bold,
-          color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
-      ),
-      controller: txtPassword,
-    );
-
+    
     final nameCompany = TextFormField(
       keyboardType: TextInputType.text,
       autofocus: false,
@@ -246,8 +245,9 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtNameCompany,
     );
@@ -263,8 +263,9 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtAddress,
     );
@@ -279,120 +280,206 @@ class _SignUpPage1State extends State<SignUpPage1> {
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.bold,
           color: Colors.grey),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.green))
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
       ),
       controller: txtPhoneCompany,
     );
 
-    final signupButton = Container(
-      height: 40.0,
-      child: Material(
-        borderRadius: BorderRadius.circular(20.0),
-        shadowColor: Colors.greenAccent,
-        color: Colors.green,
-        elevation: 7.0,
-        child: RaisedButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          onPressed: () {register();},
-          padding: EdgeInsets.all(12),
-          color: Colors.green,
-          child: Center(
-            child: Text(
-              'SIGN UP',
-              style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Montserrat'),
-            ),
-          ),
-        ),
-      ),
-    );
-    final backButton = Container(
-      height: 40.0,
-      child: Material(
-        borderRadius: BorderRadius.circular(20.0),
-        shadowColor: Colors.blueGrey,
-        color: Colors.blueGrey,
-        elevation: 7.0,
-        child: RaisedButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          onPressed: () {
-            Navigator.of(context).pushNamed(LoginPage.tag);
-          },
-          padding: EdgeInsets.all(12),
-          color: Colors.blueGrey,
-          child: Center(
-            child: Text(
-              'GO BACK',
-              style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Montserrat'),
-            ),
-          ),
-        ),
-      ),
-    );
-
     return Scaffold(
-      // resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white,
-      body: ListView(
-          // crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              padding: EdgeInsets.only(top: 30.0, left: 20.0, right: 20.0),
-              child: Column(
-                children: <Widget>[
-                  logo,
-                  SizedBox(height: 10.0),
-                  name,
-                  SizedBox(height: 2.0),
-                  email,
-                  SizedBox(height: 2.0),
-                  phone,
-                  SizedBox(height: 2.0),
-                  password,
-                  SizedBox(height: 15.0),
-                  DropdownButton(
-                    // : txtPhoneCompany,
-                    isExpanded: true,
-                    items: data.map((item) {
-                      return new DropdownMenuItem(
-                        child: new Text(item['description']),
-                        value: item['id'].toString(),
-                      
-                      );
-                    }).toList(),
-                    onChanged: (newVal) {
-                      setState(() {
-                        _mySelection = newVal;
-                      });
-                    },
-                    value: _mySelection,
-                  ),
-                  SizedBox(height: 0.0),
-                  nameCompany,
-                  SizedBox(height: 2.0),
-                  address,
-                  SizedBox(height: 2.0),
-                  comapanyPhone,
-                  SizedBox(height: 40.0),
-                  signupButton,
-                  SizedBox(height: 20.0),
-                  backButton,
-                  SizedBox(height: 20.0),
-                ],
-              ),
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              // stops: [0.4, 0.7, 0.9],
+              colors: [
+                Colors.blueGrey[900],
+                Colors.blueGrey[700],
+                Colors.blueGrey[400]
+              ],
             ),
-          ]
-        )
-      );
-   }
- }
+          ),
+           // padding: EdgeInsets.only(top: 85.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                SizedBox(height: 40,),
+                Container(
+                  alignment: Alignment.centerRight,
+                  child: FlatButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      'Back',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20.0,
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Image.asset('logoDofly.png', width: 70.0),
+                      // SizedBox(height: 10,),
+                      Text("Poin of Sales", style: TextStyle(color: Colors.white, fontSize: 18),),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(topLeft: Radius.circular(45), topRight: Radius.circular(35))
+                    ),
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: EdgeInsets.only(left:25, right: 25),
+                        child: Column(
+                          children: <Widget>[
+                            Container(
+                              height: 500.0,
+                              child: PageView(
+                                physics: ClampingScrollPhysics(),
+                                controller: _pageController,
+                                onPageChanged: (int page) {
+                                  setState(() {
+                                    _currentPage = page;
+                                  });
+                                },
+                                children: <Widget>[
+                                  Padding(
+                                    padding: EdgeInsets.only(top:40.0, left: 10.0, right: 10.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        SizedBox(height: 30,),
+                                        name,
+                                        SizedBox(height: 20,),
+                                        email,
+                                        SizedBox(height: 20,),
+                                        password,
+                                        SizedBox(height: 20,),
+                                        phone,
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(top:40.0, left: 10.0, right: 10.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        SizedBox(height: 30,),
+                                        Container(
+                                          padding: EdgeInsets.symmetric(horizontal: 10.0),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(23.0),
+                                            border: Border.all(
+                                            style: BorderStyle.solid, width: 0.80),
+                                          ),
+                                          child: DropdownButton(
+                                            // : txtPhoneCompany,
+                                            isExpanded: true,
+                                            items: data.map((item) {
+                                              return new DropdownMenuItem(
+                                                child: new Text(item['description']),
+                                                value: item['id'].toString(),
+                                              
+                                              );
+                                            }).toList(),
+                                            onChanged: (newVal) {
+                                              setState(() {
+                                                _mySelection = newVal;
+                                              });
+                                            },
+                                            value: _mySelection,
+                                          )
+                                        ),
+                                        SizedBox(height: 20,),
+                                        nameCompany,
+                                        SizedBox(height: 20,),
+                                        comapanyPhone,
+                                        SizedBox(height: 20,),
+                                        address,
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: <Widget>[
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: _buildPageIndicator(),
+                                ),
+                                SizedBox(height: 10.0),
+                                Align(
+                                alignment: FractionalOffset.center,
+                                child: Container(
+                                  height: 55.0,
+                                  width: (_currentPage == (_numPages - 1)) ? 150 : 55,
+                                  child: Material(
+                                    borderRadius: BorderRadius.circular(32.0),
+                                    shadowColor: Colors.blueGrey.shade400,
+                                    color: Colors.blueGrey.shade400,
+                                    elevation: 7.0,
+                                    child: RaisedButton(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(24),
+                                      ),
+                                      onPressed: () {
+                                        if(_currentPage== 0){
+                                          _pageController.nextPage(
+                                            duration: Duration(milliseconds: 500),
+                                            curve: Curves.easeInOutQuint);
+                                        }else if(_currentPage==1){
+                                          register();
+                                        }
+                                      },
+                                      padding: EdgeInsets.all(12),
+                                      color: Colors.blueGrey.shade400,
+                                      child: Center(
+                                        child: 
+                                        (_currentPage == (_numPages - 1))
+                                        ?Text(
+                                          'Sign Up',
+                                          style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Montserrat'),
+                                        ):
+                                        Icon(
+                                            Icons.navigate_next,
+                                            size: 35,
+                                            color: Colors.white,
+                                          ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              ],
+                            ),
+                          ]
+                        ),
+                      ),
+                    ),
+                  ),
+                ),  
+              ],
+            ),
+        ),
+      ),
+    );
+  }
+}

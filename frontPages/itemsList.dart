@@ -194,6 +194,29 @@ List dataKategori = List();
     }
   }
 
+  void _deleteData(int id) async {
+    print(id);
+    // String active = false;
+    // Store all data with Param Name.
+    var dataInput = {'is_active':false};
+  
+    // print(data);
+    // Starting Web API Call.
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String stringValue = prefs.getString('Token');
+    var response = await http.put(BaseUrl.url+'inventory/is_active/${id}', headers: { 'Accept':'application/json','Content-Type':'application/json','Authorization': 'Bearer ${stringValue}'}, body: json.encode(dataInput));
+ 
+    final data = jsonDecode(response.body);
+    if (data['data']['is_active'] == false) {
+      setState(() {
+        // Navigator.pop(context);
+        getData();
+      });
+    } else {
+      print(data);
+    }
+  }
+
   _chooseGallery() async {
     var image = await ImagePicker.pickImage(
       source: ImageSource.gallery,
@@ -372,7 +395,7 @@ List dataKategori = List();
                               ),
                               // alignment: Alignment.centerLeft,
                               padding: new EdgeInsets.only(right: 10.0),
-                              onPressed: () {  },
+                              onPressed: () { _deleteData(data[index]['id']); },
                             ),
                           ),
                           // //BUTTON KEDUA
@@ -417,6 +440,7 @@ List dataKategori = List();
     );
   }
 
+  
   
   void _onPressAdd(){
     final invName = TextFormField(
