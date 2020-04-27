@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,10 +13,16 @@ class Landings extends StatefulWidget {
 }
 
 class _LandingsState extends State<Landings> {
+  String nama ="";
+  String namaCompany ="";
   userInfo() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String stringValue = prefs.getString('user');
+    final stringValue = jsonDecode(prefs.getString('user'));
     print(stringValue);
+    setState(() {
+      nama = stringValue['nama'];
+      namaCompany = stringValue['company']['data']['name_company'];
+    });
   }
   @override
   void initState() {
@@ -40,7 +48,7 @@ class _LandingsState extends State<Landings> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "yudi@gmail.com",
+                        namaCompany,
                         style: GoogleFonts.openSans(
                             textStyle: TextStyle(
                                 color: Colors.white,
@@ -51,7 +59,7 @@ class _LandingsState extends State<Landings> {
                         height: 4,
                       ),
                       Text(
-                        "Home",
+                        nama,
                         style: GoogleFonts.openSans(
                             textStyle: TextStyle(
                                 color: Color(0xffa29aac),
