@@ -1,5 +1,5 @@
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,28 +12,16 @@ import 'dart:io';
 import '../default/constan.dart';
 import '../default/baseurl.dart';
 import '../default/api.dart';
+import 'addDetailsItems.dart';
+import 'editDetailsItems.dart';
 
-
-
-// class Itemslist extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Flutter Demo',
-//       theme: ThemeData(
-//         primarySwatch: Colors.amber,
-//       ),
-//       debugShowCheckedModeBanner: false,
-//       home: ShowItemList(),
-//     );
-//   }
-// }
 class ShowItemList extends StatefulWidget {
   @override
   _ShowItemListState createState() => _ShowItemListState();
 }
 
 class _ShowItemListState extends State<ShowItemList> {
+  String onRefresh;
   String _mySelection;
   String items;
   final txtName = TextEditingController();
@@ -44,15 +32,21 @@ class _ShowItemListState extends State<ShowItemList> {
   Future<File> file;
   String status = '';
   String base64Image;
+  var loading = false;
+    
 
   List data; //DEFINE VARIABLE data DENGAN TYPE List AGAR DAPAT MENAMPUNG COLLECTION / ARRAY
 
   Future<String> getData() async {
+    setState(() {
+      loading = true;
+    });
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String stringValue = prefs.getString('Token');
     var res = await http.get(BaseUrl.itemList, headers: { 'accept':'application/json','Content-Type':'application/json','Authorization':'Bearer ${stringValue}' });
 
     setState(() {
+
       //RESPONSE YANG DIDAPATKAN DARI API TERSEBUT DI DECODE
       var content = json.decode(res.body);
       print(content);
@@ -60,220 +54,16 @@ class _ShowItemListState extends State<ShowItemList> {
       //DIMANA SECARA SPESIFIK YANG INGIN KITA AMBIL ADALAH ISI DARI KEY hasil
       data = content['data'];
       // print(data);
+      loading = false;
     });
     return 'success!';
   }
-  // _showMsg(msg) {
-  //   final snackBar = SnackBar(
-  //     content: Text(msg),
-  //     action: SnackBarAction(
-  //       label: 'Close',
-  //       onPressed: () {
-  //         // Some code to undo the change!
-  //       },
-  //     ),
-  //   );
-  //   Scaffold.of(context).showSnackBar(snackBar);
-  // }
 
-List dataKategori = List();
-  Future<String> getCategoryData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String stringValue = prefs.getString('Token');
-    var res = await http
-        .get(Uri.encodeFull(BaseUrl.categoriList), headers: {"Accept": "application/json","Content-Type":"application/json","Authorization":"Bearer ${stringValue}" });
-    var resBody = json.decode(res.body);
-
-    setState(() {
-      dataKategori = resBody['data'];
-    });
-    // print(res.body);
-    // print(resBody);
-
-    return "Sucess";
-  }
-
+  
   void initState() {
     super.initState();
     this.getData(); //PANGGIL FUNGSI YANG TELAH DIBUAT SEBELUMNYA
-    this.getCategoryData();
-    _mySelection=items;
   } 
-
-  Future simpanInv() async{
-    // Showing CircularProgressIndicator.
-    setState(() {
-    });
-
-    FocusScope.of(context).requestFocus(FocusNode());
-    try {
-      var request = await CallApi().postDataFile('inventory');
-      request.headers.addAll(await CallApi().setHeader());
-      request.fields['category_id'] = _mySelection;
-      request.fields['inventory_name'] = txtName.text;
-      request.fields['price'] = txtPrice.text;
-      request.fields['stock'] = txtStok.text;
-      print(_mySelection);
-      if (_imageFile != null) {
-        var stream =
-            http.ByteStream(DelegatingStream.typed(_imageFile.openRead()));
-        var length = await _imageFile.length();
-        request.files.add(http.MultipartFile('image', stream, length,
-            filename: path.basename(_imageFile.path)));
-      }
-      // print(path.basename(_imageFile.path));
-      var response = await request.send();
-      // print(response.statusCode);
-      if (response.statusCode > 2) { //response status 201 (created)
-        var body = json.decode(await response.stream.bytesToString());
-        if (body['data'] != null) {
-          // SharedPreferences localStorage =
-          //     await SharedPreferences.getInstance();
-          // localStorage.setString('user', json.encode(body['data']));
-          print('File Uploaded');
-          getData();
-          // _showMsg('Berhasil Disimpan');
-        } else {
-          print(body);
-          // _showMsg('Gagal Disimpan !');
-        }
-      } else {
-        print('Gagal Disimpan !');
-        // _showMsg('');
-      }
-    } catch (e) {
-      debugPrint('Error : $e');
-      // _showMsg('Error');
-    }
-
-  }
-
-
-  Future updtaeInv(int id) async{
-    setState(() {
-    });
-    FocusScope.of(context).requestFocus(FocusNode());
-    try {
-      var request = await CallApi().postDataFile('inventory/edit/${id}');
-      request.headers.addAll(await CallApi().setHeader());
-      request.fields['category_id'] = _mySelection;
-      request.fields['inventory_name'] = txtName.text;
-      request.fields['price'] = txtPrice.text;
-      request.fields['stock'] = txtStok.text;
-      print(_mySelection);
-      if (_imageFile != null) {
-        var stream =
-            http.ByteStream(DelegatingStream.typed(_imageFile.openRead()));
-        var length = await _imageFile.length();
-        request.files.add(http.MultipartFile('image', stream, length,
-            filename: path.basename(_imageFile.path)));
-      }
-      // print(path.basename(_imageFile.path));
-      var response = await request.send();
-      // print(response.statusCode);
-      if (response.statusCode > 2) { //response status 201 (created)
-        var body = json.decode(await response.stream.bytesToString());
-        if (body['data'] != null) {
-          // SharedPreferences localStorage =
-          //     await SharedPreferences.getInstance();
-          // localStorage.setString('user', json.encode(body['data']));
-          print('File Uploaded');
-          getData();
-          // _showMsg('Berhasil Disimpan');
-        } else {
-          print(body);
-          // _showMsg('Gagal Disimpan !');
-        }
-      } else {
-        print('Gagal Disimpan !');
-        // _showMsg('');
-      }
-    } catch (e) {
-      debugPrint('Error : $e');
-      // _showMsg('Error');
-    }
-  }
-
-  void _deleteData(int id) async {
-    print(id);
-    // String active = false;
-    // Store all data with Param Name.
-    var dataInput = {'is_active':false};
-  
-    // print(data);
-    // Starting Web API Call.
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String stringValue = prefs.getString('Token');
-    var response = await http.put(BaseUrl.url+'inventory/is_active/${id}', headers: { 'Accept':'application/json','Content-Type':'application/json','Authorization': 'Bearer ${stringValue}'}, body: json.encode(dataInput));
- 
-    final data = jsonDecode(response.body);
-    if (data['data']['is_active'] == false) {
-      setState(() {
-        // Navigator.pop(context);
-        getData();
-      });
-    } else {
-      print(data);
-    }
-  }
-
-  _chooseGallery() async {
-    var image = await ImagePicker.pickImage(
-      source: ImageSource.gallery,
-      maxHeight: 1920.0,
-      maxWidth: 1080.0,
-    );
-    setState(() {
-      _imageFile = image;
-    });
-  }
-
-  Widget showImage() {
-    return FutureBuilder<File>(
-      future: file,
-      builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            null != snapshot.data) {
-          _imageFile = snapshot.data;
-          base64Image = base64Encode(snapshot.data.readAsBytesSync());
-          return Flexible(
-            child: Image.file(
-              snapshot.data,
-              fit: BoxFit.fill,
-            ),
-          );
-        } else if (null != snapshot.error) {
-          return const Text(
-            'Error Picking Image',
-            textAlign: TextAlign.center,
-          );
-        } else {
-          return const Text(
-            'No Image Selected',
-            textAlign: TextAlign.center,
-          );
-        }
-      },
-    );
-  }
-
-  _chooseCamera() async {
-    var image = await ImagePicker.pickImage(
-      source: ImageSource.camera,
-      maxHeight: 1920.0,
-      maxWidth: 1080.0,
-    );
-    setState(() {
-      _imageFile = image;
-    });
-  }
-
-  Future<String> checkImageProfile() async {
-    SharedPreferences localStorage = await SharedPreferences.getInstance();
-    var user = json.decode(localStorage.getString('user'));
-
-    return user['avatar'];
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -297,14 +87,19 @@ List dataKategori = List();
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.add), 
-            onPressed: (){
-              _onPressAdd();
+            onPressed: ()async{
+              // _onPressAdd();
+              String val = await Navigator.push(context, 
+              MaterialPageRoute(builder: (context)=>ItemsForm()));
+              setState(() {
+                val == 'refresh' ? this.getData() : '';
+              });
             }
           ),
           IconButton(
             icon: Icon(Icons.search), 
             onPressed: (){
-              
+              // showSearch(context: context, delegate: DataSearch());
             }
           )
         ],
@@ -319,19 +114,20 @@ List dataKategori = List();
             itemBuilder: (BuildContext context, int index) { 
               return Container(
                 child: Card(
-                  // color: Color(0xffc8e6c9),
-                  // color: Color(Colors.green),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min, children: <Widget>[
-                    //ListTile MENGELOMPOKKAN WIDGET MENJADI BEBERAPA BAGIAN
                     ListTile(
-                      //leading TAMPIL PADA SEBELAH KIRI
-                      // DIMANA VALUE DARI leading ADALAH WIDGET TEXT
-                      // YANG BERISI NOMOR SURAH
-                      // leading: Text(data[index]['id'].toString(), style: TextStyle(fontSize: 20.0),),
+                      onTap: ()async{ 
+                        String val = await Navigator.push(context, 
+                          MaterialPageRoute(builder: (context)=>ItemsFormEdit(data[index]['id'].toString(), data[index]['inventory_name'], data[index]['price'].toString(), data[index]['stock'].toString(), data[index]['category']['data']['id'].toString(), data[index]['image'].toString()))
+                        );
+                        setState(() {
+                          val == 'refresh' ? this.getData() : '';
+                        });
+                      },
                       leading: new Container(
                         width: 55.0,
                         height: 55.0,
@@ -344,12 +140,8 @@ List dataKategori = List();
                                   )
                         )
                       ),
-                      //title TAMPIL DITENGAH SETELAH leading
-                      // VALUENYA ADALAH WIDGET TEXT
-                      // YANG BERISI NAMA SURAH
                       
                       title: Text(data[index]['inventory_name'], style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),),
-                      // //subtitle TAMPIL TEPAT DIBAWAH title
                       subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start,children: <Widget>[ //MENGGUNAKAN COLUMN
                         //DIMANA MASING-MASING COLUMN TERDAPAT ROW
                         Row(
@@ -374,401 +166,20 @@ List dataKategori = List();
                           ],
                         ),
                       ],),
-                    ),
-                    //TERAKHIR, MEMBUAT BUTTON
-                    ButtonTheme.bar(
-                      child: ButtonBar(
-                        buttonPadding: EdgeInsets.only(left: 5.0, right: 5.0),
-                        children: <Widget>[
-                          // BUTTON PERTAMA 
-                          Text(data[index]['publish'], style: TextStyle(fontSize: 12.0),textAlign: TextAlign.end,),
-                          new SizedBox(width: 10.0,),
-                          new SizedBox(
-                            height: 25.0,
-                            width: 25.0,
-                            child: IconButton(
-                            //DENGAN TEXT DENGARKAN
-                              icon: new Icon(
-                                Icons.delete,
-                                size: 20.0,
-                                color: Warnadasar.menuOther,
-                              ),
-                              // alignment: Alignment.centerLeft,
-                              padding: new EdgeInsets.only(right: 10.0),
-                              onPressed: () { _deleteData(data[index]['id']); },
-                            ),
-                          ),
-                          // //BUTTON KEDUA
-                          new SizedBox(
-                            height: 25.0,
-                            width: 25.0,
-                            child: IconButton(
-                            //DENGAN TEXT DENGARKAN
-                              icon: new Icon(
-                                Icons.create,
-                                size: 20.0,
-                                color: Warnadasar.menuOther,
-                              ),
-                              // alignment: Alignment.centerLeft,
-                              padding: new EdgeInsets.only(right: 10.0),
-                              onPressed: () { 
-                                // showSimpleCustomDialog(context);
-                                // this.getCategoryData();
-                                _onPressEdit(index, data[index]['id']);
-                              },
-                            ),
-                          )
-                          
-                        ],
+                      trailing: Icon(
+                        Icons.keyboard_arrow_right,
+                        color: Colors.blueGrey.shade700,
                       ),
                     ),
-                  
+                    
                   ],),
                 )
               );
             },
           ),
         ),
-      //   floatingActionButton: FloatingActionButton(
-      //   onPressed: (){
-      //     _onPressAdd();
-      //   },
-      //   tooltip: 'Increment',
-      //   backgroundColor: Warnadasar.menuOther,
-      //   child: Icon(Icons.add),
-      // ),
     );
   }
-
-  
-  
-  void _onPressAdd(){
-    final invName = TextFormField(
-      autofocus: false,
-      decoration: InputDecoration(
-        // hintText: 'Email',
-        // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
-        labelText: 'nama',
-        labelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.bold,
-          color: Colors.grey),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(32.0)),
-          borderSide: BorderSide(color: Warnadasar.menuCar),)
-      ),
-      controller: txtName,
-    );
-    final harga = TextFormField(
-      autofocus: false,
-      decoration: InputDecoration(
-        // hintText: 'Email',
-        // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
-        labelText: 'Harga',
-        labelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.bold,
-          color: Colors.grey),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(32.0)),
-          borderSide: BorderSide(color: Warnadasar.menuCar),)
-      ),
-      controller: txtPrice,
-    );
-    final stok = TextFormField(
-      autofocus: false,
-      decoration: InputDecoration(
-        // hintText: 'Email',
-        // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
-        labelText: 'Stok',
-        labelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.bold,
-          color: Colors.grey),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(32.0)),
-          borderSide: BorderSide(color: Warnadasar.menuCar),
-        )
-      ),
-      controller: txtStok,
-    );
-    txtName.text = "";
-    txtPrice.text = "";
-    txtStok.text = "";
-    //print(_mySelection);
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: new Text("Add Inventory"),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Container(
-                height: 350.0,
-                width: 300.0,
-                child: ListView(
-                  children: <Widget>[
-                    Container(
-                      height: 70.0,
-                      child: InkWell(
-                        onTap: _chooseGallery,
-                        child: FutureBuilder(
-                          future: checkImageProfile(),
-                          builder:
-                              (BuildContext context, AsyncSnapshot<String> snapshot) {
-                            if (snapshot.hasData) {
-                              if (_imageFile == null) {
-                                return CircleAvatar(
-                                  radius: 75.0,
-                                  backgroundImage: NetworkImage(snapshot.data),
-                                  backgroundColor: Colors.transparent,
-                                );
-                              } else {
-                                return CircleAvatar(
-                                  radius: 75.0,
-                                  backgroundImage: FileImage(_imageFile),
-                                  backgroundColor: Colors.transparent,
-                                );
-                              }
-                            } else {
-                              return Text('No Image');
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                    Container(
-                      child: Column(
-                        children: <Widget>[
-                          invName,
-                          SizedBox(height: 10.0,),
-                          harga,
-                          SizedBox(height: 20.0,),
-                          stok,
-                          SizedBox(height: 20.0,),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10.0),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(23.0),
-                              border: Border.all(
-                              color: Warnadasar.menuCar, style: BorderStyle.solid, width: 0.80),
-                            ),
-                            child: DropdownButton(
-                                // : txtPhoneCompany,
-                                isExpanded: true,
-                                items: dataKategori.map((item) {
-                                return new DropdownMenuItem(
-                                  child: new Text(item['description']),
-                                  value: item['id'].toString(),
-                                );
-                                }).toList(),
-                                onChanged: (newVal) {
-                                  setState(() {
-                                    _mySelection = newVal;
-                                    print("searchSource:" + _mySelection);
-                                  });
-                                },
-                                value: _mySelection,
-                              ),
-                            )
-                          ]
-                      )
-                    ),
-                    
-                  ],
-                ),
-              );
-            },
-          ),
-          actions: <Widget>[
-            RaisedButton(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              color: Warnadasar.menuCar,
-              onPressed: () {
-                simpanInv();
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                'Simpan',
-                style: TextStyle(fontSize: 18.0, color: Colors.white),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-                              
-  }
-
-  void _onPressEdit(int index, int id){
-    final invName = TextFormField(
-      autofocus: false,
-      decoration: InputDecoration(
-        // hintText: 'Email',
-        // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        // border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
-        labelText: 'nama',
-        labelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.bold,
-          color: Colors.grey),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(32.0)),
-          borderSide: BorderSide(color: Warnadasar.menuCar),)
-      ),
-      controller: txtName,
-    );
-    final harga = TextFormField(
-      autofocus: false,
-      decoration: InputDecoration(
-        // hintText: 'Email',
-        // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        // border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
-        labelText: 'Harga',
-        labelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.bold,
-          color: Colors.grey),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(32.0)),
-          borderSide: BorderSide(color: Warnadasar.menuCar),)
-      ),
-      controller: txtPrice,
-    );
-    final stok = TextFormField(
-      autofocus: false,
-      decoration: InputDecoration(
-        // hintText: 'Email',
-        // contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        // border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
-        labelText: 'Stok',
-        labelStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.bold,
-          color: Colors.grey),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(32.0)),
-          borderSide: BorderSide(color: Warnadasar.menuCar),)
-      ),
-      controller: txtStok,
-    );
-    txtName.text = data[index]['inventory_name'];
-    txtStok.text = data[index]['stock'].toString();
-    txtPrice.text = data[index]['price'].toString();
-    _mySelection=data[index]['category']['data']['id'].toString();
-    //print(_mySelection);
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: new Text("Edit Inventory"),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Container(
-                height: 350.0,
-                width: 300.0,
-                child: ListView(
-                  children: <Widget>[
-                    Container(
-                      height: 70.0,
-                      child: InkWell(
-                        onTap: _chooseGallery,
-                        child: FutureBuilder(
-                          future: checkImageProfile(),
-                          builder:
-                              (BuildContext context, AsyncSnapshot<String> snapshot) {
-                            if (snapshot.hasData) {
-                              if (_imageFile == null) {
-                                return CircleAvatar(
-                                  radius: 75.0,
-                                  backgroundImage: NetworkImage(snapshot.data),
-                                  backgroundColor: Colors.transparent,
-                                );
-                              } else {
-                                return CircleAvatar(
-                                  radius: 75.0,
-                                  backgroundImage: FileImage(_imageFile),
-                                  backgroundColor: Colors.transparent,
-                                );
-                              }
-                            } else {
-                              return Text('No Image');
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                    Container(
-                      child: Column(
-                        children: <Widget>[
-                          invName,
-                          SizedBox(height: 10.0,),
-
-                          harga,
-                          SizedBox(height: 20.0,),
-                          stok,
-                          SizedBox(height: 20.0,),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10.0),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(23.0),
-                              border: Border.all(
-                              color: Warnadasar.menuCar, style: BorderStyle.solid, width: 0.80),
-                            ),
-                            child: DropdownButton(
-                            // : txtPhoneCompany,
-                              isExpanded: true,
-                              items: dataKategori.map((item) {
-                              return new DropdownMenuItem(
-                                child: new Text(item['description']),
-                                value: item['id'].toString(),
-                              );
-                              }).toList(),
-                              onChanged: (newVal) {
-                                setState(() {
-                                  _mySelection = newVal;
-                                  print("searchSource:" + _mySelection);
-                                });
-                              },
-                              value: _mySelection,
-                            ),
-                          )
-                        ]
-                      )
-                    ),
-                    
-                  ],
-                ),
-              );
-            },
-          ),
-          actions: <Widget>[
-            RaisedButton(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              color: Warnadasar.menuCar,
-              onPressed: () {
-                Navigator.of(context).pop();
-                updtaeInv(id);
-                getData();
-              },
-              child: Text(
-                'Simpan',
-                style: TextStyle(fontSize: 18.0, color: Colors.white),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-                              
-  }
-
   
 }
+  
