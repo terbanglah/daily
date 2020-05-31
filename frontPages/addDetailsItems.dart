@@ -21,7 +21,7 @@ class ItemsForm extends StatefulWidget {
 
 class _ItemsFormState extends State<ItemsForm> {
   var selectedCard = 'WEIGHT';
-  String _mySelection='1';
+  String _mySelection;
   String items;
   final txtName = TextEditingController();
   final txtPrice = TextEditingController();
@@ -39,6 +39,7 @@ class _ItemsFormState extends State<ItemsForm> {
       setState(() {
         dataKategori = resBody['data'];
       });
+      _mySelection=resBody['data'][0]['id'].toString();
       // print(res.body);
       // print(resBody);
 
