@@ -36,7 +36,7 @@ class _ShowItemListState extends State<ShowItemList> {
     
 
   List data; //DEFINE VARIABLE data DENGAN TYPE List AGAR DAPAT MENAMPUNG COLLECTION / ARRAY
-
+  List unFilterData;
   Future<String> getData() async {
     setState(() {
       loading = true;
@@ -56,6 +56,7 @@ class _ShowItemListState extends State<ShowItemList> {
       // print(data);
       loading = false;
     });
+    this.unFilterData = data;
     return 'success!';
   }
 
@@ -65,8 +66,47 @@ class _ShowItemListState extends State<ShowItemList> {
     this.getData(); //PANGGIL FUNGSI YANG TELAH DIBUAT SEBELUMNYA
   } 
 
+  searchData(str){
+    var strExist = str.length > 0 ? true : false;
+    if(strExist){
+      var filterData = [];
+      for (var i = 0; i < unFilterData.length; i++) {
+        String nama = unFilterData[i]['inventory_name'].toUpperCase();
+        if (nama.contains(str.toUpperCase())) {
+          filterData.add(unFilterData[i]);
+        }
+      }
+      print(filterData);
+      setState(() {
+        this.data = filterData;
+      });
+    }else{
+      setState(() {
+        this.data = this.unFilterData;  
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final search = TextFormField(
+      autofocus: false,
+      decoration: InputDecoration(
+        labelText: 'Search a Items',
+        labelStyle: TextStyle(
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.bold,
+          color: Colors.grey),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(32.0)
+        ),
+      ),
+      onChanged: (String str){
+        print(str);
+        this.searchData(str);
+      },
+      controller: txtName,
+    );
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xffe86f16),
@@ -105,79 +145,87 @@ class _ShowItemListState extends State<ShowItemList> {
         ],
       ),
       body: Container(
+        margin: EdgeInsets.only(top: 10.0, right: 10.0, left: 10.0, bottom: 10.0),
+        child:Column(
           
-          margin: EdgeInsets.only(top: 10.0, right: 10.0, left: 10.0, bottom: 10.0), //SET MARGIN DARI CONTAINER
-          // padding: EdgeInsets.only(bottom: 50.0),
-          child: ListView.builder( //MEMBUAT LISTVIEW
-            padding: EdgeInsets.only(bottom: 60.0),
-            itemCount: data == null ? 0:data.length, //KETIKA DATANYA KOSONG KITA ISI DENGAN 0 DAN APABILA ADA MAKA KITA COUNT JUMLAH DATA YANG ADA
-            itemBuilder: (BuildContext context, int index) { 
-              return Container(
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min, children: <Widget>[
-                    ListTile(
-                      onTap: ()async{ 
-                        String val = await Navigator.push(context, 
-                          MaterialPageRoute(builder: (context)=>ItemsFormEdit(data[index]['id'].toString(), data[index]['inventory_name'], data[index]['price'].toString(), data[index]['stock'].toString(), data[index]['category']['data']['id'].toString(), data[index]['image'].toString()))
-                        );
-                        setState(() {
-                          val == 'refresh' ? this.getData() : '';
-                        });
-                      },
-                      leading: new Container(
-                        width: 55.0,
-                        height: 55.0,
-                        decoration: new BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: new DecorationImage(
-                            fit: BoxFit.fill,
-                            image: new NetworkImage(
-                                  data[index]['image'].toString())
-                                  )
-                        )
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            search,
+            Expanded(
+              child: ListView.builder( //MEMBUAT LISTVIEW
+                padding: EdgeInsets.only(bottom: 60.0),
+                itemCount: data == null ? 0:data.length, //KETIKA DATANYA KOSONG KITA ISI DENGAN 0 DAN APABILA ADA MAKA KITA COUNT JUMLAH DATA YANG ADA
+                itemBuilder: (BuildContext context, int index) { 
+                  return Container(
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      
-                      title: Text(data[index]['inventory_name'], style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),),
-                      subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start,children: <Widget>[ //MENGGUNAKAN COLUMN
-                        //DIMANA MASING-MASING COLUMN TERDAPAT ROW
-                        Row(
-                          children: <Widget>[
-                            Text(data[index]['category']['data']['description'], style: TextStyle(fontStyle: FontStyle.italic, fontSize: 15.0),),
-                          ],
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min, children: <Widget>[
+                        ListTile(
+                          onTap: ()async{ 
+                            String val = await Navigator.push(context, 
+                              MaterialPageRoute(builder: (context)=>ItemsFormEdit(data[index]['id'].toString(), data[index]['inventory_name'], data[index]['price'].toString(), data[index]['stock'].toString(), data[index]['category']['data']['id'].toString(), data[index]['image'].toString()))
+                            );
+                            setState(() {
+                              val == 'refresh' ? this.getData() : '';
+                            });
+                          },
+                          leading: new Container(
+                            width: 55.0,
+                            height: 55.0,
+                            decoration: new BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: new DecorationImage(
+                                fit: BoxFit.fill,
+                                image: new NetworkImage(
+                                      data[index]['image'].toString())
+                                      )
+                            )
+                          ),
+                          
+                          title: Text(data[index]['inventory_name'], style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),),
+                          subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start,children: <Widget>[ //MENGGUNAKAN COLUMN
+                            //DIMANA MASING-MASING COLUMN TERDAPAT ROW
+                            Row(
+                              children: <Widget>[
+                                Text(data[index]['category']['data']['description'], style: TextStyle(fontStyle: FontStyle.italic, fontSize: 15.0),),
+                              ],
+                            ),
+                            Row(
+                              children: <Widget>[
+                                // Text('Rp. ', style: TextStyle(fontWeight: FontWeight.bold),),
+                                Text('Rp. '),
+                                //DARI INDEX ayat
+                                Text(data[index]['price'].toString())
+                              ],
+                            ),
+                            Row(
+                              children: <Widget>[
+                                // Text('Rp. ', style: TextStyle(fontWeight: FontWeight.bold),),
+                                Text('Stok '),
+                                //DARI INDEX ayat
+                                Text(data[index]['stock'].toString())
+                              ],
+                            ),
+                          ],),
+                          trailing: Icon(
+                            Icons.keyboard_arrow_right,
+                            color: Colors.blueGrey.shade700,
+                          ),
                         ),
-                        Row(
-                          children: <Widget>[
-                            // Text('Rp. ', style: TextStyle(fontWeight: FontWeight.bold),),
-                            Text('Rp. '),
-                            //DARI INDEX ayat
-                            Text(data[index]['price'].toString())
-                          ],
-                        ),
-                        Row(
-                          children: <Widget>[
-                            // Text('Rp. ', style: TextStyle(fontWeight: FontWeight.bold),),
-                            Text('Stok '),
-                            //DARI INDEX ayat
-                            Text(data[index]['stock'].toString())
-                          ],
-                        ),
+                        
                       ],),
-                      trailing: Icon(
-                        Icons.keyboard_arrow_right,
-                        color: Colors.blueGrey.shade700,
-                      ),
-                    ),
-                    
-                  ],),
-                )
-              );
-            },
-          ),
+                    )
+                  );
+                },
+              ),
+            )
+          ],
         ),
+      )
     );
   }
   
