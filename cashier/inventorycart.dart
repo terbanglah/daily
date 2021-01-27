@@ -22,6 +22,7 @@ class _InventoryCartState extends State<InventoryCart> {
   var laodingInventory = false;
   int typeCategory = 0;
   int amountCart = 0;
+  var notif = false;
 
   TextEditingController qtyController = TextEditingController();
 
@@ -121,27 +122,30 @@ class _InventoryCartState extends State<InventoryCart> {
   }
 
   _addCart(BuildContext context, InventoryModel z) async {
-    var data = {
-      'inventory_id': z.id,
-      'qty': qtyController.text,
-    };
-    var response = await CallApi().postData(data, 'cart');
-    final body = jsonDecode(response.body);
-    print(body);
-    if (body['data'] != null) {
-      setState(() {
-        widget.reloadCart();
-        _readCart();
-      });
-      Navigator.pop(context);
-      _showMsg(context, '${z.inventoryName} ditambahkan dikasir');
-    } else {
-      Navigator.pop(context);
-      _showMsg(context, '${z.inventoryName} gagal ditambahkan dikasir !');
+    if (int.parse(qtyController.text) <= z.stock) {
+      var data = {
+        'inventory_id': z.id,
+        'qty': qtyController.text,
+      };
+      var response = await CallApi().postData(data, 'cart');
+      final body = jsonDecode(response.body);
+      print(body);
+      if (body['data'] != null) {
+        setState(() {
+          widget.reloadCart();
+          _readCart();
+        });
+        Navigator.pop(context);
+        _showMsg(context, '${z.inventoryName} ditambahkan dikasir');
+      } else {
+        Navigator.pop(context);
+        _showMsg(context, '${z.inventoryName} gagal ditambahkan dikasir !');
+      }
     }
   }
 
   dialogDetail(BuildContext context, InventoryModel z) {
+    notif = false;
     if (z.stock <= 0) {
       return _showMsg(context, '${z.inventoryName} stok telah habis !');
     }
@@ -150,67 +154,83 @@ class _InventoryCartState extends State<InventoryCart> {
       context: context,
       builder: (context) {
         return Dialog(
-          child: ListView(
-            shrinkWrap: true,
-            children: <Widget>[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return ListView(
+                shrinkWrap: true,
                 children: <Widget>[
-                  Image.network(
-                    z.image,
-                    height: 180,
-                    fit: BoxFit.fill,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Image.network(
+                        z.image,
+                        height: 200,
+                        fit: BoxFit.fill,
+                      ),
+                      ListTile(
+                        title: Text(
+                          z.inventoryName,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          'Rp. ' + oCcy.format(z.price).toString(),
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
                   ),
-                  ListTile(
-                    title: Text(
-                      z.inventoryName,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      'Rp. ' + oCcy.format(z.price).toString(),
-                      style: TextStyle(color: Colors.red),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(20.0, 0, 15.0, 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Container(
+                          width: 140.0,
+                          child: TextField(
+                            controller: qtyController,
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.all(0.0),
+                              prefixText: 'Kuantitas :  ',
+                              errorText: notif ? 'Stok tidak cukup' : null,
+                            ),
+                            keyboardType: TextInputType.number,
+                            onChanged: (x) {
+                              print(x);
+                              setState(() {
+                                if (int.parse(x) > z.stock) {
+                                  notif = true;
+                                } else {
+                                  notif = false;
+                                }
+                              });
+                            },
+                            autofocus: true,
+                          ),
+                        ),
+                        Container(
+                          width: 100,
+                          child: RaisedButton(
+                            onPressed: () {
+                              _addCart(context, z);
+                            },
+                            disabledColor: Colors.grey,
+                            color: Warnadasar.menuFood,
+                            child: Text(
+                              'Simpan',
+                              style: TextStyle(
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
                     ),
                   ),
                 ],
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.0, 0, 15.0, 20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Container(
-                      width: 140.0,
-                      child: TextField(
-                        controller: qtyController,
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.all(0.0),
-                          prefixText: 'Kuantitas :  ',
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                    Container(
-                      width: 100,
-                      child: RaisedButton(
-                        onPressed: () {
-                          _addCart(context, z);
-                        },
-                        disabledColor: Colors.grey,
-                        color: Warnadasar.menuFood,
-                        child: Text(
-                          'Simpan',
-                          style: TextStyle(
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
+              );
+            },
           ),
         );
       },
@@ -228,6 +248,7 @@ class _InventoryCartState extends State<InventoryCart> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       key: _scaffoldkey,
       appBar: AppBar(
         actions: <Widget>[
@@ -271,7 +292,10 @@ class _InventoryCartState extends State<InventoryCart> {
         title: Center(
           child: Text(
             'Item',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.0,
+            ),
           ),
         ),
         backgroundColor: Warnadasar.menuFood,

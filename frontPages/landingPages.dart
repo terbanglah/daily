@@ -1,81 +1,93 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../default/constan.dart';
-import 'beranda/berandaViews.dart';
+import 'griddashboard.dart';
 import 'moreInfo.dart';
 
-class Landings extends StatelessWidget {
+class Landings extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.green
-      ),
-      debugShowCheckedModeBanner: false,
-      home: showlanding(),
-    );
+  _LandingsState createState() => _LandingsState();
+}
+
+class _LandingsState extends State<Landings> {
+  String nama ="";
+  String namaCompany ="";
+  userInfo() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final stringValue = jsonDecode(prefs.getString('user'));
+    print(stringValue);
+    setState(() {
+      nama = stringValue['nama'];
+      namaCompany = stringValue['company']['data']['name_company'];
+    });
   }
-}
-
-class showlanding extends StatefulWidget {
   @override
-  _showlandingState createState() => _showlandingState();
-}
-
-class _showlandingState extends State<showlanding> {
-  List<Widget> _container =[
-    new BerandaView(),
-  ];
+  void initState() {
+    super.initState();
+    userInfo();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size(double.infinity, 100),
-        child: Container(
-          decoration: BoxDecoration(
-            boxShadow: [BoxShadow(
-              color: Colors.black12,
-              spreadRadius: 5,
-              blurRadius: 2
-            )]
-          ),
-          width: MediaQuery.of(context).size.width,
-          height: 90,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.blueGrey.shade600,
-              // borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20),bottomRight: Radius.circular(20))
+      // backgroundColor: Color(0xff392850),
+      backgroundColor: Colors.blueGrey.shade800,
+      body:Column(
+          children: <Widget>[
+            SizedBox(
+              height: 110,
             ),
-            child: Container(
-              padding: EdgeInsets.only(left: 20.0,top: 20.0, right: 20.0),
-              margin: EdgeInsets.fromLTRB(0,20, 0, 0),
+            Padding(
+              padding: EdgeInsets.only(left: 16, right: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(Icons.navigate_before,size: 28,color: Colors.transparent,),
-                  Image.asset('1.png',width: 70.0,),
-                  // Text("Doffly",style: TextStyle(fontSize: 20,color: Colors.white,fontWeight: FontWeight.bold),),
-                  new GestureDetector(
-                    onTap:() {
+                children: <Widget>[
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        namaCompany,
+                        style: GoogleFonts.openSans(
+                            textStyle: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                      SizedBox(
+                        height: 4,
+                      ),
+                      Text(
+                        nama,
+                        style: GoogleFonts.openSans(
+                            textStyle: TextStyle(
+                                color: Color(0xffa29aac),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600)),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    alignment: Alignment.topCenter,
+                    icon: Icon(Icons.more_vert),
+                    color: Colors.white,
+                    onPressed: () {
                       Navigator.push(
                         context,
-                          MaterialPageRoute(builder: (context) => AkunUser())
+                        MaterialPageRoute(builder: (context) => InfoUser()),
                       );
                     },
-                    child :new Icon(Icons.more_vert ,color: Colors.white,),
                   )
                 ],
               ),
             ),
-          ),
-        ),
+            SizedBox(
+              height: 40,
+            ),
+          GridDashboard()
+          ],
       ),
-      backgroundColor: Colors.white,
-      body: _container[0],
-      );
+    );
   }
 }
